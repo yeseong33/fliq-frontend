@@ -29,5 +29,10 @@ export const settlementAPI = {
   // 정산 확인 (수령자가 호출)
   confirm: (settlementId) => {
     return api.post(`/settlements/${settlementId}/confirm`);
+  },
+
+  // 정산 거절 (수령자가 송금 미수령 시 호출)
+  reject: (settlementId, reason) => {
+    return api.post(`/settlements/${settlementId}/reject`, { reason });
   }
 };

@@ -103,17 +103,19 @@ const ProfilePage = () => {
               <ChevronRight size={20} className="text-gray-400" />
             </button>
 
-            <div className="flex items-center justify-between p-4 -mx-2">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-xl flex items-center justify-center">
+            <div className="flex items-center p-4 -mx-2">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-xl flex items-center justify-center shrink-0">
                   <Mail size={20} className="text-gray-500 dark:text-gray-400" />
                 </div>
-                <div className="text-left">
-                  <div className="text-xs text-gray-500 dark:text-gray-400">이메일</div>
-                  <div className="font-medium text-gray-900 dark:text-white">{user?.email || '-'}</div>
+                <div className="text-left min-w-0">
+                  <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+                    이메일
+                    <span className="text-gray-400 dark:text-gray-500">· 변경 불가</span>
+                  </div>
+                  <div className="font-medium text-gray-900 dark:text-white truncate">{user?.email || '-'}</div>
                 </div>
               </div>
-              <span className="text-xs text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-lg">변경 불가</span>
             </div>
           </div>
         </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { X, Send, Check, ChevronRight, Sparkles, PartyPopper, ChevronLeft } from 'lucide-react';
-import { openTossTransfer, getBankName } from '../../utils/tossDeeplink';
+import { X, Send, Check, ChevronRight, ChevronLeft } from 'lucide-react';
+import { getBankName } from '../../utils/tossDeeplink';
 import { settlementAPI } from '../../api';
 import toast from 'react-hot-toast';
 
@@ -9,7 +9,6 @@ const SequentialTransfer = ({ settlements, onClose, onComplete }) => {
   const [completedIds, setCompletedIds] = useState(new Set());
   const [openedTossIds, setOpenedTossIds] = useState(new Set());
   const [isAnimating, setIsAnimating] = useState(false);
-  const [showComplete, setShowComplete] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const pendingSettlements = settlements.filter(s => s.status === 'PENDING');
@@ -19,28 +18,24 @@ const SequentialTransfer = ({ settlements, onClose, onComplete }) => {
   const progress = totalCount > 0 ? ((completedCount) / totalCount) * 100 : 0;
   const hasOpenedToss = currentSettlement && openedTossIds.has(currentSettlement.id);
 
-  // 모든 송금 완료 체크
+  // 모든 송금 완료 시 바로 닫기
   useEffect(() => {
     if (completedCount === totalCount && totalCount > 0) {
-      setTimeout(() => setShowComplete(true), 300);
+      setTimeout(() => {
+        onComplete?.();
+        onClose();
+      }, 300);
     }
   }, [completedCount, totalCount]);
 
   // 토스로 송금하기
   const handleTransfer = useCallback(() => {
-    if (!currentSettlement?.toUser?.paymentMethod) {
+    if (!currentSettlement?.tossDeeplink) {
       toast.error('수신자의 계좌 정보가 없습니다');
       return;
     }
 
-    const { bankCode, accountNumber } = currentSettlement.toUser.paymentMethod;
-
-    openTossTransfer({
-      bankCode,
-      accountNumber,
-      amount: currentSettlement.amount,
-      message: `정산금액`,
-    });
+    window.location.href = currentSettlement.tossDeeplink;
 
     // 토스 앱 열었음을 기록
     setOpenedTossIds(prev => new Set([...prev, currentSettlement.id]));
@@ -91,66 +86,6 @@ const SequentialTransfer = ({ settlements, onClose, onComplete }) => {
       }, 300);
     }
   };
-
-  // 완료 화면
-  if (showComplete) {
-    return (
-      <div className="fixed inset-0 z-50 bg-gradient-to-b from-green-500 to-emerald-600 flex flex-col">
-        {/* 헤더 */}
-        <div className="flex items-center justify-between p-4">
-          <div className="w-10" />
-          <div className="text-white/80 font-medium">송금 완료</div>
-          <button onClick={() => { onComplete?.(); onClose(); }} className="w-10 h-10 flex items-center justify-center">
-            <X className="text-white/80" size={24} />
-          </button>
-        </div>
-
-        {/* 메인 콘텐츠 */}
-        <div className="flex-1 flex flex-col items-center justify-center px-8">
-          {/* Confetti 효과 */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            {[...Array(30)].map((_, i) => (
-              <div
-                key={i}
-                className="confetti"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  animationDelay: `${Math.random() * 0.5}s`,
-                  backgroundColor: ['#fff', '#FFE66D', '#4ECDC4', '#95E1D3', '#F8B500'][i % 5],
-                }}
-              />
-            ))}
-          </div>
-
-          <div className="animate-scale-in text-center">
-            <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-8 backdrop-blur-sm">
-              <PartyPopper className="text-white" size={48} />
-            </div>
-
-            <h1 className="text-4xl font-bold text-white mb-3">완료!</h1>
-            <p className="text-white/80 text-lg mb-12">
-              모든 송금이 완료되었습니다
-            </p>
-
-            <div className="bg-white/20 backdrop-blur-sm rounded-3xl px-12 py-8 mb-12">
-              <div className="text-6xl font-bold text-white mb-2">{totalCount}</div>
-              <div className="text-white/70">건 송금 완료</div>
-            </div>
-          </div>
-        </div>
-
-        {/* 하단 버튼 */}
-        <div className="p-6 pb-8">
-          <button
-            onClick={() => { onComplete?.(); onClose(); }}
-            className="w-full py-4 bg-white text-green-600 font-bold text-lg rounded-2xl shadow-lg"
-          >
-            확인
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   // 보낼 정산이 없는 경우
   if (totalCount === 0) {
@@ -263,10 +198,10 @@ const SequentialTransfer = ({ settlements, onClose, onComplete }) => {
                 <div className="text-xl font-bold text-gray-900 dark:text-white mb-1">
                   {currentSettlement?.toUser?.name || '알 수 없음'}
                 </div>
-                {currentSettlement?.toUser?.paymentMethod ? (
+                {currentSettlement?.toUserPaymentMethod ? (
                   <div className="text-sm text-gray-500 dark:text-gray-400">
-                    {getBankName(currentSettlement.toUser.paymentMethod.bankCode)}{' '}
-                    {currentSettlement.toUser.paymentMethod.accountNumber}
+                    {getBankName(currentSettlement.toUserPaymentMethod.bankCode)}{' '}
+                    {currentSettlement.toUserPaymentMethod.accountNumber}
                   </div>
                 ) : (
                   <div className="text-sm text-red-500">계좌 정보 없음</div>
@@ -303,7 +238,7 @@ const SequentialTransfer = ({ settlements, onClose, onComplete }) => {
               ) : (
                 <button
                   onClick={handleTransfer}
-                  disabled={!currentSettlement?.toUser?.paymentMethod}
+                  disabled={!currentSettlement?.tossDeeplink}
                   className="w-full py-4 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold text-lg rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-500/25"
                 >
                   <Send size={22} />

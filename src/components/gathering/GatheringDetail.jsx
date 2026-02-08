@@ -12,6 +12,7 @@ import Input from '../common/Input';
 import Modal from '../common/Modal';
 import QRCodeDisplay from './QRCodeDisplay';
 import SequentialTransfer from '../payment/SequentialTransfer';
+import SequentialConfirm from '../payment/SequentialConfirm';
 
 // XSS 방어를 위한 텍스트 새니타이저
 const sanitizeText = (text) => {
@@ -154,6 +155,8 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
   const [celebrationType, setCelebrationType] = useState(null); // null | 'send' | 'receive'
   const [showSequentialTransfer, setShowSequentialTransfer] = useState(false);
   const [myPendingSettlements, setMyPendingSettlements] = useState([]);
+  const [showSequentialConfirm, setShowSequentialConfirm] = useState(false);
+  const [myReceiveSettlements, setMyReceiveSettlements] = useState([]);
 
   // 지출 목록 조회
   const fetchExpenses = async () => {
@@ -384,6 +387,18 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
         />
       )}
 
+      {/* 순차 수령 확인 모달 */}
+      {showSequentialConfirm && (
+        <SequentialConfirm
+          settlements={myReceiveSettlements}
+          onClose={() => setShowSequentialConfirm(false)}
+          onComplete={() => {
+            fetchSettlements();
+            setCelebrationType('receive');
+          }}
+        />
+      )}
+
       {/* 상단 헤더 */}
       <div className="px-5 py-4 bg-white dark:bg-gray-800/50 rounded-2xl shadow-[0_2px_8px_0_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_0_rgba(0,0,0,0.2)]">
         <div className="flex items-center justify-between">
@@ -446,24 +461,11 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
           setShowSequentialTransfer(true);
         };
 
-        // 모든 COMPLETED 정산 수령 확인
-        const completedToReceive = toReceive.filter(s => s.status === 'COMPLETED');
-        const handleReceiveAll = async () => {
-          if (completedToReceive.length === 0) return;
-
-          setCalculatingSettlement(true);
-          try {
-            for (const settlement of completedToReceive) {
-              await settlementAPI.confirm(settlement.id);
-            }
-            setCelebrationType('receive');
-            await fetchSettlements();
-          } catch (error) {
-            console.error('Failed to confirm all:', error);
-            toast.error('수령 확인 중 오류가 발생했습니다.');
-          } finally {
-            setCalculatingSettlement(false);
-          }
+        // 순차 수령 확인 화면 열기
+        const handleOpenConfirm = () => {
+          if (pendingToReceive.length === 0) return;
+          setMyReceiveSettlements(pendingToReceive);
+          setShowSequentialConfirm(true);
         };
 
         // 정산이 없거나 나와 관련 없으면 표시 안함
@@ -501,26 +503,13 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
 
             {/* 받을 금액 (있을 때만) */}
             {toReceive.length > 0 && totalToReceive > 0 && (
-              completedToReceive.length > 0 ? (
-                <button
-                  onClick={handleReceiveAll}
-                  disabled={calculatingSettlement}
-                  className="w-full flex items-center justify-center gap-3 py-5 bg-green-500 text-white font-bold text-xl rounded-2xl transition-all duration-200 disabled:opacity-50 shadow-[0_4px_14px_0_rgba(34,197,94,0.4)] hover:shadow-[0_6px_20px_0_rgba(34,197,94,0.5)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-[0_2px_10px_0_rgba(34,197,94,0.4)]"
-                >
-                  {calculatingSettlement ? (
-                    <span className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <Check size={22} />
-                      +{totalToReceive.toLocaleString()}원 수령 확인
-                    </>
-                  )}
-                </button>
-              ) : (
-                <div className="w-full flex items-center justify-center gap-3 py-5 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 text-green-600 dark:text-green-400 font-bold text-xl rounded-2xl shadow-[0_4px_14px_0_rgba(34,197,94,0.15)]">
-                  +{totalToReceive.toLocaleString()}원 받을 예정
-                </div>
-              )
+              <button
+                onClick={handleOpenConfirm}
+                className="w-full flex items-center justify-center gap-3 py-5 bg-green-500 text-white font-bold text-xl rounded-2xl transition-all duration-200 shadow-[0_4px_14px_0_rgba(34,197,94,0.4)] hover:shadow-[0_6px_20px_0_rgba(34,197,94,0.5)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-[0_2px_10px_0_rgba(34,197,94,0.4)]"
+              >
+                <Check size={22} />
+                +{totalToReceive.toLocaleString()}원 수령 확인
+              </button>
             )}
 
             {/* 내 지출 (실제 분담금 합계) */}
