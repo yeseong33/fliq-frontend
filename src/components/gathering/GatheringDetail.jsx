@@ -191,13 +191,14 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
       const toReceiveResponse = await settlementAPI.getMyToReceive();
       const toReceiveSettlements = toReceiveResponse?.data?.data || toReceiveResponse?.data || [];
 
-      // 모임별 정산에 계좌 정보 병합
+      // 모임별 정산에 계좌 정보 및 최신 상태 병합
       const mergedSettlements = gatheringSettlements.map(settlement => {
         // /my/to-send에서 같은 정산 찾기
         const toSendMatch = toSendSettlements.find(s => s.id === settlement.id);
         if (toSendMatch) {
           return {
             ...settlement,
+            status: toSendMatch.status, // 최신 상태 반영
             toUserPaymentMethod: toSendMatch.toUserPaymentMethod,
             tossDeeplink: toSendMatch.tossDeeplink,
           };
@@ -207,6 +208,7 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
         if (toReceiveMatch) {
           return {
             ...settlement,
+            status: toReceiveMatch.status, // 최신 상태 반영
             toUserPaymentMethod: toReceiveMatch.toUserPaymentMethod,
             tossDeeplink: toReceiveMatch.tossDeeplink,
           };
