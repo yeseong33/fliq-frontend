@@ -49,8 +49,9 @@ const BottomNav = () => {
   };
 
   // 바텀 네비게이션을 표시할 페이지들
-  const showOnPaths = ['/main', '/profile', '/gathering'];
-  const shouldShow = showOnPaths.some(p => location.pathname.startsWith(p));
+  const showOnPaths = ['/main', '/profile'];
+  const isGatheringDetail = /^\/gathering\/[^/]+$/.test(location.pathname);
+  const shouldShow = showOnPaths.some(p => location.pathname.startsWith(p)) || isGatheringDetail;
 
   if (!shouldShow) return null;
 

@@ -42,15 +42,23 @@ const ProfilePage = () => {
   };
 
   const handleNameUpdate = async () => {
-    if (!newName.trim()) {
+    const trimmed = newName.trim();
+    if (!trimmed) {
       toast.error('이름을 입력해주세요.');
+      return;
+    }
+    if (trimmed.length > 50) {
+      toast.error('이름은 50자 이내로 입력해주세요.');
       return;
     }
 
     setLoading(true);
     try {
-      // TODO: API 연동 시 실제 업데이트 호출
-      // await updateProfile({ name: newName });
+      const res = await userAPI.updateMe({ name: trimmed });
+      const updatedUser = res.data?.data || res.data;
+      // 스토어 및 sessionStorage 업데이트
+      useAuthStore.setState({ user: { ...user, name: updatedUser.name || trimmed } });
+      sessionStorage.setItem('user', JSON.stringify({ ...user, name: updatedUser.name || trimmed }));
       toast.success('이름이 변경되었습니다.');
       setShowNameEdit(false);
     } catch (error) {

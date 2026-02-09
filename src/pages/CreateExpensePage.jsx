@@ -79,8 +79,17 @@ const CreateExpensePage = () => {
   };
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    if (field === 'totalAmount') {
+      const raw = value.replace(/,/g, '').replace(/[^0-9]/g, '');
+      setFormData(prev => ({ ...prev, [field]: raw }));
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }));
+    }
   };
+
+  const formattedAmount = formData.totalAmount
+    ? Number(formData.totalAmount).toLocaleString()
+    : '';
 
   const handleToggleParticipant = (userId) => {
     setParticipantShares(prev => prev.map(p =>
@@ -198,9 +207,9 @@ const CreateExpensePage = () => {
             </label>
             <div className="relative">
               <input
-                type="number"
+                type="text"
                 inputMode="numeric"
-                value={formData.totalAmount}
+                value={formattedAmount}
                 onChange={(e) => handleInputChange('totalAmount', e.target.value)}
                 placeholder="0"
                 className="w-full pl-4 pr-12 py-4 text-2xl font-bold text-right border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-300 dark:placeholder-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"

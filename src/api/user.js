@@ -9,6 +9,13 @@ import api from './config';
  */
 export const userAPI = {
   /**
+   * 이름 변경
+   * @param {{ name: string }} data
+   * @returns {Promise<UserResponse>}
+   */
+  updateMe: (data) => api.patch('/users/me', data),
+
+  /**
    * 회원 탈퇴
    * @returns {Promise<void>}
    */
