@@ -64,7 +64,8 @@ const GatheringList = ({ gatherings, loading }) => {
     <div className="space-y-4">
       {gatherings.map((gathering) => {
         const status = getStatusLabel(gathering.status);
-        const dateInfo = formatSmartDate(gathering.startAt || gathering.createdAt);
+        const startInfo = formatSmartDate(gathering.startAt);
+        const endInfo = formatSmartDate(gathering.endAt);
 
         return (
           <div
@@ -84,9 +85,11 @@ const GatheringList = ({ gatherings, loading }) => {
                 )}
               </div>
 
-              <span className={`flex-shrink-0 ml-4 px-3 py-1.5 rounded-full text-xs font-medium ${getStatusColor(gathering.status)}`}>
-                {status.emoji} {status.text}
-              </span>
+              {gathering.status !== GATHERING_STATUS.ACTIVE && (
+                <span className={`flex-shrink-0 ml-4 px-3 py-1.5 rounded-full text-xs font-medium ${getStatusColor(gathering.status)}`}>
+                  {status.emoji} {status.text}
+                </span>
+              )}
             </div>
 
             <div className="flex items-center justify-between">
@@ -104,14 +107,14 @@ const GatheringList = ({ gatherings, loading }) => {
                 )}
               </div>
 
-              {dateInfo && (
+              {startInfo && (
                 <div className="flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-xl">
                   <Calendar size={14} className="text-blue-500 dark:text-blue-400" />
                   <span className="text-blue-600 dark:text-blue-400 text-sm font-medium">
-                    {dateInfo.month}/{dateInfo.day}
-                  </span>
-                  <span className="text-blue-500 dark:text-blue-300 text-xs">
-                    {dateInfo.timeString}
+                    {startInfo.month}/{startInfo.day}
+                    {endInfo && (endInfo.month !== startInfo.month || endInfo.day !== startInfo.day) &&
+                      ` - ${endInfo.month}/${endInfo.day}`
+                    }
                   </span>
                 </div>
               )}

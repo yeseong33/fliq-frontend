@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { CreditCard, Plus, Trash2, Star, Building2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { CreditCard, Plus, Trash2, Check, Building2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DOMPurify from 'dompurify';
 import Header from '../components/common/Header';
 import Button from '../components/common/Button';
-import Modal from '../components/common/Modal';
-import { paymentMethodAPI, PAYMENT_PLATFORMS, BANK_CODES } from '../api/paymentMethod';
+import { paymentMethodAPI, BANK_CODES } from '../api/paymentMethod';
 
 // XSS 방어
 const sanitizeText = (text) => {
@@ -14,16 +14,9 @@ const sanitizeText = (text) => {
 };
 
 const PaymentMethodPage = () => {
+  const navigate = useNavigate();
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [formData, setFormData] = useState({
-    platform: 'TOSS',
-    bankCode: 'TOSS_BANK',
-    accountNumber: '',
-    accountHolder: '',
-  });
-  const [submitting, setSubmitting] = useState(false);
 
   // 결제 수단 목록 조회
   const fetchPaymentMethods = async () => {
@@ -42,49 +35,29 @@ const PaymentMethodPage = () => {
     fetchPaymentMethods();
   }, []);
 
-  // 결제 수단 등록
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // 페이지 포커스 시 자동 갱신
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchPaymentMethods();
+      }
+    };
 
-    if (!formData.accountNumber.trim()) {
-      toast.error('계좌번호를 입력해주세요.');
-      return;
-    }
-    if (!formData.accountHolder.trim()) {
-      toast.error('예금주명을 입력해주세요.');
-      return;
-    }
-    // 계좌번호 검증 (숫자와 하이픈만)
-    if (!/^[\d-]+$/.test(formData.accountNumber)) {
-      toast.error('올바른 계좌번호를 입력해주세요.');
-      return;
-    }
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
 
-    setSubmitting(true);
+  // 카드 클릭 시 기본 결제 수단으로 설정
+  const handleCardClick = async (method) => {
+    if (method.isDefault) return;
+
+    if (!confirm('이 계좌를 기본 계좌로 설정할까요?')) return;
+
     try {
-      await paymentMethodAPI.create(formData);
-      toast.success('결제 수단이 등록되었습니다.');
-      setShowAddModal(false);
-      setFormData({
-        platform: 'TOSS',
-        bankCode: 'TOSS_BANK',
-        accountNumber: '',
-        accountHolder: '',
-      });
-      fetchPaymentMethods();
-    } catch (error) {
-      console.error('Failed to create payment method:', error);
-      toast.error(sanitizeText(error.message) || '결제 수단 등록에 실패했습니다.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  // 기본 결제 수단 설정
-  const handleSetDefault = async (id) => {
-    try {
-      await paymentMethodAPI.setDefault(id);
-      toast.success('기본 결제 수단으로 설정되었습니다.');
+      await paymentMethodAPI.setDefault(method.id);
+      toast.success('기본 계좌로 설정되었습니다.');
       fetchPaymentMethods();
     } catch (error) {
       console.error('Failed to set default:', error);
@@ -104,11 +77,6 @@ const PaymentMethodPage = () => {
       console.error('Failed to delete:', error);
       toast.error(sanitizeText(error.message) || '삭제에 실패했습니다.');
     }
-  };
-
-  // 플랫폼명 가져오기
-  const getPlatformLabel = (value) => {
-    return PAYMENT_PLATFORMS.find(p => p.value === value)?.label || value;
   };
 
   // 은행명 가져오기
@@ -136,76 +104,61 @@ const PaymentMethodPage = () => {
               <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">로딩 중...</p>
             </div>
           ) : paymentMethods.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {paymentMethods.map((method) => (
                 <div
                   key={method.id}
-                  className={`p-4 rounded-2xl border-2 transition-all duration-300 ${
+                  onClick={() => handleCardClick(method)}
+                  className={`p-4 rounded-2xl border-2 transition-all duration-200 ${
                     method.isDefault
-                      ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20'
-                      : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50'
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                      : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 cursor-pointer hover:border-gray-300 dark:hover:border-gray-600 active:scale-[0.98]'
                   }`}
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
                         method.isDefault
-                          ? 'bg-gradient-to-br from-blue-500 to-indigo-500 text-white shadow-lg shadow-blue-500/25'
+                          ? 'bg-blue-500 text-white'
                           : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
                       }`}>
-                        <Building2 size={24} />
+                        {method.isDefault ? <Check size={20} /> : <Building2 size={20} />}
                       </div>
                       <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-bold text-gray-900 dark:text-white">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-gray-900 dark:text-white">
                             {sanitizeText(getBankLabel(method.bankCode))}
                           </span>
                           {method.isDefault && (
-                            <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full font-medium">
+                            <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
                               기본
                             </span>
                           )}
                         </div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">
-                          {sanitizeText(method.accountNumber)} · {sanitizeText(method.accountHolder)}
-                        </div>
-                        <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                          {sanitizeText(getPlatformLabel(method.platform))}
+                          {sanitizeText(method.accountNumber)}
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1">
-                      {!method.isDefault && (
-                        <button
-                          onClick={() => handleSetDefault(method.id)}
-                          className="p-2.5 text-gray-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-xl transition-all duration-200"
-                          title="기본 설정"
-                        >
-                          <Star size={20} />
-                        </button>
-                      )}
-                      {paymentMethods.length > 1 ? (
-                        <button
-                          onClick={() => handleDelete(method.id)}
-                          className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all duration-200"
-                          title="삭제"
-                        >
-                          <Trash2 size={20} />
-                        </button>
-                      ) : (
-                        <button
-                          disabled
-                          className="p-2.5 text-gray-300 dark:text-gray-600 cursor-not-allowed"
-                          title="최소 1개의 계좌가 필요합니다"
-                        >
-                          <Trash2 size={20} />
-                        </button>
-                      )}
-                    </div>
+                    {paymentMethods.length > 1 && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(method.id);
+                        }}
+                        className="p-2 text-gray-400 hover:text-red-500 rounded-lg transition-colors"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
+
+              <p className="text-xs text-gray-500 dark:text-gray-400 text-center pt-2">
+                계좌를 탭하면 기본 계좌로 설정됩니다
+              </p>
             </div>
           ) : (
             <div className="text-center py-12">
@@ -220,119 +173,17 @@ const PaymentMethodPage = () => {
           )}
         </div>
 
-        {/* 안내 문구 */}
-        <div className="p-5 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl mb-4">
-          <p className="text-sm text-blue-700 dark:text-blue-300">
-            등록된 기본 계좌로 정산 금액을 송금받을 수 있습니다.
-            토스 딥링크를 통해 빠른 송금이 지원됩니다.
-          </p>
-        </div>
-
         {/* 추가 버튼 */}
         <Button
           fullWidth
           size="lg"
-          onClick={() => setShowAddModal(true)}
+          onClick={() => navigate('/payment-methods/add')}
           className="flex items-center justify-center gap-2"
         >
           <Plus size={22} />
           계좌 추가
         </Button>
       </div>
-
-      {/* 계좌 추가 모달 */}
-      <Modal
-        isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        title="계좌 추가"
-      >
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* 플랫폼 선택 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              송금 플랫폼
-            </label>
-            <select
-              value={formData.platform}
-              onChange={(e) => setFormData({ ...formData, platform: e.target.value })}
-              className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-2xl bg-gray-50 dark:bg-gray-700/50 text-gray-900 dark:text-white focus:bg-white dark:focus:bg-gray-700 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all duration-300"
-            >
-              {PAYMENT_PLATFORMS.map((platform) => (
-                <option key={platform.value} value={platform.value}>
-                  {platform.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* 은행 선택 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              은행
-            </label>
-            <select
-              value={formData.bankCode}
-              onChange={(e) => setFormData({ ...formData, bankCode: e.target.value })}
-              className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-2xl bg-gray-50 dark:bg-gray-700/50 text-gray-900 dark:text-white focus:bg-white dark:focus:bg-gray-700 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all duration-300"
-            >
-              {BANK_CODES.map((bank) => (
-                <option key={bank.value} value={bank.value}>
-                  {bank.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* 계좌번호 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              계좌번호
-            </label>
-            <input
-              type="text"
-              value={formData.accountNumber}
-              onChange={(e) => setFormData({ ...formData, accountNumber: e.target.value })}
-              placeholder="'-' 없이 입력"
-              maxLength={50}
-              className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-2xl bg-gray-50 dark:bg-gray-700/50 text-gray-900 dark:text-white placeholder-gray-400 focus:bg-white dark:focus:bg-gray-700 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all duration-300"
-            />
-          </div>
-
-          {/* 예금주명 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              예금주명
-            </label>
-            <input
-              type="text"
-              value={formData.accountHolder}
-              onChange={(e) => setFormData({ ...formData, accountHolder: e.target.value })}
-              placeholder="예금주 이름"
-              maxLength={50}
-              className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-2xl bg-gray-50 dark:bg-gray-700/50 text-gray-900 dark:text-white placeholder-gray-400 focus:bg-white dark:focus:bg-gray-700 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all duration-300"
-            />
-          </div>
-
-          {/* 버튼 */}
-          <div className="flex gap-3 pt-2">
-            <Button
-              type="button"
-              variant="secondary"
-              fullWidth
-              onClick={() => setShowAddModal(false)}
-            >
-              취소
-            </Button>
-            <Button
-              type="submit"
-              fullWidth
-              loading={submitting}
-            >
-              등록
-            </Button>
-          </div>
-        </form>
-      </Modal>
     </div>
   );
 };

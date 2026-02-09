@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
@@ -6,14 +6,31 @@ import { useAuthStore } from './store/authStore';
 import { RECAPTCHA, AUTH_FLOW } from './utils/constants';
 import AuthPage from './pages/AuthPage';
 import MainPage from './pages/MainPage';
+import CreateGatheringPage from './pages/CreateGatheringPage';
 import GatheringPage from './pages/GatheringPage';
 import PaymentPage from './pages/PaymentPage';
 import ProfilePage from './pages/ProfilePage';
 import PaymentMethodPage from './pages/PaymentMethodPage';
+import AddPaymentMethodPage from './pages/AddPaymentMethodPage';
+import Loading from './components/common/Loading';
 
 function App() {
-  const { user, authFlow, needsOTPVerification, pendingCredentials } = useAuthStore();
+  const { user, authFlow, initializing, initialize, needsOTPVerification, pendingCredentials } = useAuthStore();
   const location = useLocation();
+
+  // 앱 시작 시 인증 상태 초기화
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
+
+  // 초기화 중일 때 로딩 표시
+  if (initializing) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
+        <Loading message="로딩 중..." />
+      </div>
+    );
+  }
 
   // 회원가입 계좌 등록 단계에서는 인증 페이지 유지
   const isSignupAccountStep = authFlow === AUTH_FLOW.SIGNUP_ACCOUNT;
@@ -71,13 +88,17 @@ function App() {
           path="/auth/*"
           element={(!user || isSignupAccountStep) ? <AuthPage /> : <Navigate to="/main" replace />}
         />
-        <Route 
-          path="/main" 
-          element={user ? <MainPage /> : <Navigate to="/auth" replace />} 
+        <Route
+          path="/main"
+          element={user ? <MainPage /> : <Navigate to="/auth" replace />}
         />
-        <Route 
-          path="/gathering/:id" 
-          element={user ? <GatheringPage /> : <Navigate to="/auth" replace />} 
+        <Route
+          path="/gathering/new"
+          element={user ? <CreateGatheringPage /> : <Navigate to="/auth" replace />}
+        />
+        <Route
+          path="/gathering/:id"
+          element={user ? <GatheringPage /> : <Navigate to="/auth" replace />}
         />
         <Route
           path="/payment/:gatheringId"
@@ -90,6 +111,10 @@ function App() {
         <Route
           path="/payment-methods"
           element={user ? <PaymentMethodPage /> : <Navigate to="/auth" replace />}
+        />
+        <Route
+          path="/payment-methods/add"
+          element={user ? <AddPaymentMethodPage /> : <Navigate to="/auth" replace />}
         />
         <Route path="/" element={<Navigate to={user ? "/main" : "/auth"} replace />} />
         <Route path="*" element={<Navigate to={user ? "/main" : "/auth"} replace />} />

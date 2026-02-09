@@ -6,7 +6,8 @@ export const useAuthStore = create((set, get) => ({
   // 사용자 정보
   user: null,
   isAuthenticated: false,
-  loading: true,
+  initializing: true, // 앱 초기화 전용
+  loading: false,     // 개별 작업용
 
   // 인증 플로우 상태
   authFlow: AUTH_FLOW.IDLE,
@@ -35,7 +36,7 @@ export const useAuthStore = create((set, get) => ({
         set({
           isAuthenticated: false,
           user: null,
-          loading: false,
+          initializing: false,
           webAuthnSupported,
         });
         return;
@@ -44,7 +45,7 @@ export const useAuthStore = create((set, get) => ({
       set({
         isAuthenticated: true,
         user: storedUser,
-        loading: false,
+        initializing: false,
         webAuthnSupported,
       });
     } catch (error) {
@@ -54,7 +55,7 @@ export const useAuthStore = create((set, get) => ({
       set({
         isAuthenticated: false,
         user: null,
-        loading: false,
+        initializing: false,
         webAuthnSupported: authService.isWebAuthnSupported(),
       });
     }

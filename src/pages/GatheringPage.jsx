@@ -57,7 +57,7 @@ const GatheringPage = () => {
   if (loading && !currentGathering) {
     return (
       <div className="page">
-        <Header title="모임" showBack={true} />
+        <Header title="모임" showBack={true} showProfile={true} />
         <div className="page-content">
           <Loading message="모임 정보를 불러오고 있습니다..." />
         </div>
@@ -90,6 +90,7 @@ const GatheringPage = () => {
       <Header
         title=""
         showBack={true}
+        showProfile={true}
       />
       
       <div className="page-content">

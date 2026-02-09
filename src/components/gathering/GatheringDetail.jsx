@@ -271,6 +271,21 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
     fetchSettlements();
   }, [gathering?.id]);
 
+  // 페이지 포커스 시 자동 갱신
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && gathering?.id) {
+        fetchExpenses();
+        fetchSettlements();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [gathering?.id]);
+
   const CATEGORY_LABELS = {
     FOOD: '음식',
     TRANSPORT: '교통',

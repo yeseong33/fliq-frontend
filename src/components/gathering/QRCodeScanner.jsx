@@ -159,23 +159,14 @@ const QRCodeScanner = ({ isOpen, onClose, onSuccess, onPaymentMethodRequired }) 
           </form>
         )}
 
-        <div className="flex gap-2">
-          <Button 
-            variant="secondary" 
-            fullWidth 
-            onClick={toggleInputMethod}
-          >
-            {showManualInput ? '카메라로 스캔' : '직접 입력'}
-          </Button>
-          
-          <Button 
-            variant="secondary" 
-            fullWidth 
-            onClick={handleClose}
-          >
-            취소
-          </Button>
-        </div>
+        <Button
+          variant="outline"
+          fullWidth
+          onClick={toggleInputMethod}
+          className="bg-gray-100 dark:bg-gray-700"
+        >
+          {showManualInput ? '카메라로 스캔' : '직접 입력'}
+        </Button>
       </div>
     </Modal>
   );

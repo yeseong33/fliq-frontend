@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+import { Calendar } from 'lucide-react';
 import { useGathering } from '../../hooks/useGathering';
 import { validateGatheringTitle, validateGatheringDescription } from '../../utils/validation';
 import { GATHERING_ERROR_CODES } from '../../utils/errorCodes';
@@ -12,31 +13,51 @@ const CreateGathering = ({ isOpen, onClose, onSuccess, onPaymentMethodRequired }
   const [formData, setFormData] = useState({
     title: '',
     description: '',
+    startAt: '',
+    endAt: '',
   });
   const [errors, setErrors] = useState({});
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!validateGatheringTitle(formData.title)) {
       newErrors.title = '모임 제목을 입력해주세요. (최대 100자)';
     }
-    
+
     if (!validateGatheringDescription(formData.description)) {
       newErrors.description = '설명은 최대 500자까지 입력 가능합니다.';
     }
-    
+
+    if (formData.startAt && formData.endAt) {
+      if (new Date(formData.startAt) >= new Date(formData.endAt)) {
+        newErrors.endAt = '종료 시간은 시작 시간보다 이후여야 합니다.';
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
-    
+
     try {
-      const gathering = await createGathering(formData);
+      const submitData = {
+        title: formData.title,
+        description: formData.description,
+      };
+
+      if (formData.startAt) {
+        submitData.startAt = new Date(formData.startAt).toISOString();
+      }
+      if (formData.endAt) {
+        submitData.endAt = new Date(formData.endAt).toISOString();
+      }
+
+      const gathering = await createGathering(submitData);
       toast.success('모임이 생성되었습니다.');
       onSuccess(gathering);
       handleClose();
@@ -61,7 +82,7 @@ const CreateGathering = ({ isOpen, onClose, onSuccess, onPaymentMethodRequired }
   };
 
   const handleClose = () => {
-    setFormData({ title: '', description: '' });
+    setFormData({ title: '', description: '', startAt: '', endAt: '' });
     setErrors({});
     onClose();
   };
@@ -102,6 +123,49 @@ const CreateGathering = ({ isOpen, onClose, onSuccess, onPaymentMethodRequired }
           )}
           <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             {formData.description.length}/500
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="form-group">
+            <label className="form-label text-gray-900 dark:text-white flex items-center gap-1.5">
+              <Calendar size={14} className="text-gray-500" />
+              시작 시간
+            </label>
+            <input
+              type="datetime-local"
+              name="startAt"
+              value={formData.startAt}
+              onChange={handleChange}
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600
+                bg-white dark:bg-gray-800
+                text-gray-900 dark:text-white
+                focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
+                focus:border-transparent
+                transition-colors duration-200"
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label text-gray-900 dark:text-white flex items-center gap-1.5">
+              <Calendar size={14} className="text-gray-500" />
+              종료 시간
+            </label>
+            <input
+              type="datetime-local"
+              name="endAt"
+              value={formData.endAt}
+              onChange={handleChange}
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600
+                bg-white dark:bg-gray-800
+                text-gray-900 dark:text-white
+                focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400
+                focus:border-transparent
+                transition-colors duration-200"
+            />
+            {errors.endAt && (
+              <div className="text-sm text-red-500 dark:text-red-400 mt-1">{errors.endAt}</div>
+            )}
           </div>
         </div>
 
