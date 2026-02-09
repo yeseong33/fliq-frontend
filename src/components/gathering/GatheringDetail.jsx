@@ -816,8 +816,8 @@ const SettlementCard = ({ settlements, user, onTransfer, onConfirm }) => {
   const totalToSend = pendingToSend.reduce((sum, s) => sum + (s.amount || 0), 0);
   const sendCount = pendingToSend.length;
 
-  // 내가 받아야 할 금액 (PENDING + COMPLETED 상태)
-  const pendingToReceive = toReceive.filter(s => s.status === 'PENDING' || s.status === 'COMPLETED');
+  // 내가 받아야 할 금액 (상대방이 송금 완료한 COMPLETED 상태만)
+  const pendingToReceive = toReceive.filter(s => s.status === 'COMPLETED');
   const totalToReceive = pendingToReceive.reduce((sum, s) => sum + (s.amount || 0), 0);
   const receiveCount = pendingToReceive.length;
 
@@ -946,8 +946,8 @@ const SettlementBottomBar = ({ settlements, user, onTransfer, onConfirm, transfe
   const pendingToSend = toSend.filter(s => s.status === 'PENDING');
   const totalToSend = pendingToSend.reduce((sum, s) => sum + (s.amount || 0), 0);
 
-  // 내가 받아야 할 금액 (PENDING + COMPLETED 상태)
-  const pendingToReceive = toReceive.filter(s => s.status === 'PENDING' || s.status === 'COMPLETED');
+  // 내가 받아야 할 금액 (상대방이 송금 완료한 COMPLETED 상태만)
+  const pendingToReceive = toReceive.filter(s => s.status === 'COMPLETED');
   const totalToReceive = pendingToReceive.reduce((sum, s) => sum + (s.amount || 0), 0);
 
   // 정산 계산 전

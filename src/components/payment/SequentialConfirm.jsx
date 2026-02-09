@@ -9,8 +9,8 @@ const SequentialConfirm = ({ settlements, onClose, onComplete }) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // PENDING + COMPLETED 상태만 대상 (CONFIRMED 제외)
-  const targetSettlements = settlements.filter(s => s.status === 'PENDING' || s.status === 'COMPLETED');
+  // 상대방이 송금 완료한 COMPLETED 상태만 대상
+  const targetSettlements = settlements.filter(s => s.status === 'COMPLETED');
   const totalCount = targetSettlements.length;
   const currentSettlement = targetSettlements[currentIndex];
   const processedCount = processedIds.size;
