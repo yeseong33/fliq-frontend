@@ -19,23 +19,325 @@
 
   /* 액션 버튼 */
   .action-button {
-    @apply flex flex-col items-center justify-center p-5 rounded-2xl transition-all duration-300;
+    @apply flex flex-col items-center justify-center p-5 rounded-2xl;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.05s ease-out, box-shadow 0.15s ease-out;
   }
 
   .action-button.primary {
-    @apply bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg shadow-blue-500/25;
+    @apply bg-blue-600 text-white;
   }
 
-  .action-button.primary:hover {
-    @apply from-blue-600 to-indigo-600;
+  /* 그라데이션 오버레이 - 가로축 가운데서 세로로 퍼지는 애니메이션 */
+  .action-button.primary::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, #2563EB 0%, #2968EC 50%, #2563EB 100%);
+    opacity: 0;
+    transform: scaleY(0);
+    transform-origin: center;
+    transition: transform 0.05s ease-out, opacity 0.15s ease-out;
+    border-radius: inherit;
+  }
+
+  .action-button.primary:active::before {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+
+  .action-button.primary > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .action-button.primary:active {
+    transform: scale(0.96);
+    @apply shadow-blue-600/40;
   }
 
   .action-button.secondary {
-    @apply bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 shadow-lg;
+    @apply bg-gray-800 dark:bg-gray-700 text-white;
   }
 
-  .action-button.secondary:hover {
-    @apply bg-gray-50 dark:bg-gray-700;
+  /* 그라데이션 오버레이 - secondary (검은색 계열) */
+  .action-button.secondary::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, #1F2937 0%, #374151 50%, #1F2937 100%);
+    opacity: 0;
+    transform: scaleY(0);
+    transform-origin: center;
+    transition: transform 0.05s ease-out, opacity 0.05s ease-out;
+    border-radius: inherit;
+  }
+
+  .action-button.secondary:active::before {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+
+  .action-button.secondary > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .action-button.secondary:active {
+    transform: scale(0.96);
+    box-shadow: 0 10px 25px -5px rgb(31 41 55 / 0.1);
+  }
+
+  /* 다크모드 secondary 그라데이션 */
+  .dark .action-button.secondary::before {
+    background: linear-gradient(180deg, #374151 0%, #4B5563 50%, #374151 100%);
+  }
+
+  /* ========================================
+     Button Press 애니메이션 시스템
+     기본: 단색 → 클릭 시: 그라데이션 펼침
+     ======================================== */
+
+  .btn-press {
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.05s ease-out, box-shadow 0.15s ease-out;
+  }
+
+  .btn-press::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transform: scaleY(0);
+    transform-origin: center;
+    transition: transform 0.05s ease-out, opacity 0.15s ease-out;
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  .btn-press:active::before {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+
+  .btn-press:active {
+    transform: scale(0.97);
+  }
+
+  .btn-press .btn-content {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Primary (파란색) */
+  .btn-press-primary {
+    background-color: #2563EB;
+  }
+
+  .btn-press-primary::before {
+    background: linear-gradient(180deg, #2563EB 0%, #2968EC 50%, #2563EB 100%);
+  }
+
+  .btn-press-primary:active {
+    box-shadow: 0 10px 25px -5px rgb(59 130 246 / 0.1);
+  }
+
+  /* Secondary (흰색/회색) */
+  .btn-press-secondary {
+    background-color: #ffffff;
+  }
+
+  .dark .btn-press-secondary {
+    background-color: #1F2937;
+  }
+
+  .btn-press-secondary::before {
+    background: linear-gradient(180deg, #ffffff 0%, #F3F4F6 50%, #ffffff 100%);
+  }
+
+  .dark .btn-press-secondary::before {
+    background: linear-gradient(180deg, #1F2937 0%, #374151 50%, #1F2937 100%);
+  }
+
+  /* Danger (빨간색) */
+  .btn-press-danger {
+    background-color: #EF4444;
+  }
+
+  .btn-press-danger::before {
+    background: linear-gradient(180deg, #EF4444 0%, #f87171 50%, #EF4444 100%);
+  }
+
+  .btn-press-danger:active {
+    box-shadow: 0 10px 25px -5px rgb(239 68 68 / 0.1);
+  }
+
+  /* Success (녹색) */
+  .btn-press-success {
+    background-color: #22C55E;
+  }
+
+  .btn-press-success::before {
+    background: linear-gradient(180deg, #22C55E 0%, #4ade80 50%, #22C55E 100%);
+  }
+
+  .btn-press-success:active {
+    box-shadow: 0 10px 25px -5px rgb(34 197 94 / 0.1);
+  }
+
+  /* Ghost (투명) */
+  .btn-press-ghost {
+    background-color: transparent;
+  }
+
+  .btn-press-ghost::before {
+    background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.05) 50%, transparent 100%);
+  }
+
+  .dark .btn-press-ghost::before {
+    background: linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%);
+  }
+
+  /* Outline (테두리) */
+  .btn-press-outline {
+    background-color: transparent;
+  }
+
+  .btn-press-outline::before {
+    background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.05) 50%, transparent 100%);
+  }
+
+  .dark .btn-press-outline::before {
+    background: linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%);
+  }
+
+  /* 큰 액션 버튼 (송금하기, 수령확인 등) */
+  .btn-action {
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.05s ease-out, box-shadow 0.15s ease-out;
+  }
+
+  .btn-action::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transform: scaleY(0);
+    transform-origin: center;
+    transition: transform 0.05s ease-out, opacity 0.15s ease-out;
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  .btn-action:active::before {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+
+  .btn-action:active {
+    transform: scale(0.97);
+  }
+
+  .btn-action-primary {
+    background-color: #2563EB;
+  }
+
+  .btn-action-primary::before {
+    background: linear-gradient(180deg, #2563EB 0%, #2968EC 50%, #2563EB 100%);
+  }
+
+  .btn-action-primary:active {
+    box-shadow: 0 10px 25px -5px rgb(59 130 246 / 0.1);
+  }
+
+  .btn-action-success {
+    background-color: #22C55E;
+  }
+
+  .btn-action-success::before {
+    background: linear-gradient(180deg, #22C55E 0%, #4ade80 50%, #22C55E 100%);
+  }
+
+  .btn-action-success:active {
+    box-shadow: 0 10px 25px -5px rgb(34 197 94 / 0.1);
+  }
+
+  /* 플로팅 액션 버튼 */
+  .btn-fab {
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.05s ease-out, box-shadow 0.15s ease-out;
+  }
+
+  .btn-fab::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, #2563EB 0%, #2968EC 50%, #2563EB 100%);
+    opacity: 0;
+    transform: scaleY(0);
+    transform-origin: center;
+    transition: transform 0.05s ease-out, opacity 0.15s ease-out;
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  .btn-fab:active::before {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+
+  .btn-fab:active {
+    transform: scale(0.93);
+  }
+
+  .btn-fab > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* 로딩 점 애니메이션 */
+  .loading-dots {
+    display: inline-flex;
+    gap: 3px;
+    align-items: center;
+    min-height: 1.5em;
+    padding: 0.5em 1em;
+  }
+
+  .loading-dots span {
+    width: 5px;
+    height: 5px;
+    background-color: currentColor;
+    border-radius: 50%;
+    animation: dot-bounce 0.6s infinite ease-in-out;
+  }
+
+  .loading-dots span:nth-child(1) {
+    animation-delay: 0s;
+  }
+
+  .loading-dots span:nth-child(2) {
+    animation-delay: 0.1s;
+  }
+
+  .loading-dots span:nth-child(3) {
+    animation-delay: 0.2s;
+  }
+
+  @keyframes dot-bounce {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-6px);
+    }
   }
 
   /* 카드 컴포넌트 - 디자인 스펙 적용 */
@@ -75,7 +377,7 @@
 
   /* 그라데이션 버튼 */
   .btn-gradient-blue {
-    @apply bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/25 transition-all;
+    @apply bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-600/25 transition-all;
   }
 
   .btn-gradient-green {

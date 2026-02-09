@@ -262,10 +262,12 @@ const PaymentHistory = ({ gatheringId }) => {
                   {myToSend.filter(s => s.status === 'PENDING').length > 1 && (
                     <button
                       onClick={handleOpenAllTransfer}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-sm font-medium rounded-full hover:from-blue-600 hover:to-indigo-600 transition-all shadow-md hover:shadow-lg"
+                      className="btn-press btn-press-primary flex items-center gap-1.5 px-3 py-1.5 text-white text-sm font-medium rounded-full shadow-md hover:shadow-lg"
                     >
-                      <Wallet size={14} />
-                      전체 송금
+                      <span className="btn-content flex items-center gap-1.5">
+                        <Wallet size={14} />
+                        전체 송금
+                      </span>
                     </button>
                   )}
                 </div>
@@ -435,7 +437,11 @@ const SettlementRow = ({ settlement, currentUser, onTransfer, onConfirm }) => {
             }`}
           >
             {loading ? (
-              <span className="w-4 h-4 border-2 border-gray-300 border-t-transparent rounded-full animate-spin" />
+              <span className="loading-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+              </span>
             ) : (
               <>
                 {settlement.status === 'CONFIRMED' ? <Check size={14} /> : <Clock size={14} />}

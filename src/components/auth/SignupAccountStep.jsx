@@ -56,7 +56,7 @@ const SignupAccountStep = ({ onBack }) => {
     return (
       <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-          <h1 className="text-center text-4xl font-bold bg-gradient-to-r from-blue-500 to-indigo-500 bg-clip-text text-transparent">
+          <h1 className="text-center text-4xl font-bold text-blue-600 dark:text-blue-500">
             Fliq
           </h1>
 
@@ -92,10 +92,12 @@ const SignupAccountStep = ({ onBack }) => {
           <div className="mt-8 space-y-3">
             <button
               onClick={() => setStep('form')}
-              className="w-full py-4 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-bold text-lg rounded-2xl shadow-lg shadow-blue-500/25 transition-all duration-300 flex items-center justify-center gap-2"
+              className="btn-action btn-action-primary w-full py-4 text-white font-bold text-lg rounded-2xl flex items-center justify-center gap-2"
             >
-              계좌 등록하기
-              <ChevronRight size={20} />
+              <span className="relative z-10 flex items-center gap-2">
+                계좌 등록하기
+                <ChevronRight size={20} />
+              </span>
             </button>
 
             <button
@@ -114,7 +116,7 @@ const SignupAccountStep = ({ onBack }) => {
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <h1 className="text-center text-4xl font-bold bg-gradient-to-r from-blue-500 to-indigo-500 bg-clip-text text-transparent">
+        <h1 className="text-center text-4xl font-bold text-blue-600 dark:text-blue-500">
           Fliq
         </h1>
         <p className="mt-4 text-center text-gray-500 dark:text-gray-400">
@@ -196,16 +198,19 @@ const SignupAccountStep = ({ onBack }) => {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-4 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-bold text-lg rounded-2xl shadow-lg shadow-blue-500/25 transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2"
+            className="btn-action btn-action-primary w-full py-4 text-white font-bold text-lg rounded-2xl disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            {submitting ? (
-              <>
-                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                등록 중...
-              </>
-            ) : (
-              '등록하고 계속하기'
-            )}
+            <span className="relative z-10 flex items-center gap-2">
+              {submitting ? (
+                <span className="loading-dots">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </span>
+              ) : (
+                '등록하고 계속하기'
+              )}
+            </span>
           </button>
 
           <button

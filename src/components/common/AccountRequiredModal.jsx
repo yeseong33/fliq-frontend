@@ -100,10 +100,12 @@ const AccountRequiredModal = ({ isOpen, onClose, onSuccess, title = '계좌 등�
 
               <button
                 onClick={() => setStep('form')}
-                className="w-full py-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-2xl flex items-center justify-center gap-2 transition-colors"
+                className="btn-action btn-action-primary w-full py-4 text-white font-semibold rounded-2xl flex items-center justify-center gap-2"
               >
-                계좌 등록하기
-                <ChevronRight size={20} />
+                <span className="relative z-10 flex items-center gap-2">
+                  계좌 등록하기
+                  <ChevronRight size={20} />
+                </span>
               </button>
             </div>
           </>
@@ -199,13 +201,19 @@ const AccountRequiredModal = ({ isOpen, onClose, onSuccess, title = '계좌 등�
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full py-4 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white font-semibold rounded-2xl flex items-center justify-center gap-2 transition-colors mt-6"
+                className="btn-action btn-action-primary w-full py-4 disabled:opacity-50 text-white font-semibold rounded-2xl flex items-center justify-center gap-2 mt-6"
               >
-                {submitting ? (
-                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (
-                  '등록 완료'
-                )}
+                <span className="relative z-10 flex items-center gap-2">
+                  {submitting ? (
+                    <span className="loading-dots">
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </span>
+                  ) : (
+                    '등록 완료'
+                  )}
+                </span>
               </button>
             </form>
           </>

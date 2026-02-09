@@ -226,16 +226,22 @@ const SequentialConfirm = ({ settlements, onClose, onComplete }) => {
                   <button
                     onClick={handleConfirm}
                     disabled={isProcessing}
-                    className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 disabled:opacity-50 text-white font-bold text-lg rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-green-500/25"
+                    className="btn-action btn-action-success w-full py-4 disabled:opacity-50 text-white font-bold text-lg rounded-2xl flex items-center justify-center gap-2"
                   >
-                    {isProcessing ? (
-                      <span className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    ) : (
-                      <>
-                        <Check size={22} />
-                        수령 확인
-                      </>
-                    )}
+                    <span className="relative z-10 flex items-center gap-2">
+                      {isProcessing ? (
+                        <span className="loading-dots">
+                          <span></span>
+                          <span></span>
+                          <span></span>
+                        </span>
+                      ) : (
+                        <>
+                          <Check size={22} />
+                          수령 확인
+                        </>
+                      )}
+                    </span>
                   </button>
                   {/* 송금 받지 못했어요 버튼 */}
                   <button

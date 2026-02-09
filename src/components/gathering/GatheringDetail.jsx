@@ -490,13 +490,15 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
               totalToSend > 0 ? (
                 <button
                   onClick={handleOpenTransfer}
-                  className="w-full flex items-center justify-center gap-3 py-5 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold text-xl rounded-2xl transition-all duration-200 shadow-[0_4px_14px_0_rgba(59,130,246,0.4)] hover:shadow-[0_6px_20px_0_rgba(59,130,246,0.5)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-[0_2px_10px_0_rgba(59,130,246,0.4)]"
+                  className="btn-action btn-action-primary w-full flex items-center justify-center gap-3 py-5 text-white font-bold text-xl rounded-2xl shadow-[0_4px_14px_0_rgba(59,130,246,0.4)]"
                 >
-                  <Send size={22} />
-                  {totalToSend.toLocaleString()}원 송금하기
+                  <span className="relative z-10 flex items-center gap-3">
+                    <Send size={22} />
+                    {totalToSend.toLocaleString()}원 송금하기
+                  </span>
                 </button>
               ) : (
-                <div className="w-full flex items-center justify-center gap-3 py-5 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 text-blue-600 dark:text-blue-400 font-bold text-xl rounded-2xl shadow-[0_4px_14px_0_rgba(59,130,246,0.15)]">
+                <div className="w-full flex items-center justify-center gap-3 py-5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-bold text-xl rounded-2xl shadow-[0_4px_14px_0_rgba(59,130,246,0.15)]">
                   <Check size={22} />
                   송금 완료
                 </div>
@@ -507,10 +509,12 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
             {toReceive.length > 0 && totalToReceive > 0 && (
               <button
                 onClick={handleOpenConfirm}
-                className="w-full flex items-center justify-center gap-3 py-5 bg-green-500 text-white font-bold text-xl rounded-2xl transition-all duration-200 shadow-[0_4px_14px_0_rgba(34,197,94,0.4)] hover:shadow-[0_6px_20px_0_rgba(34,197,94,0.5)] hover:-translate-y-0.5 active:translate-y-0 active:shadow-[0_2px_10px_0_rgba(34,197,94,0.4)]"
+                className="btn-action btn-action-success w-full flex items-center justify-center gap-3 py-5 text-white font-bold text-xl rounded-2xl shadow-[0_4px_14px_0_rgba(34,197,94,0.4)]"
               >
-                <Check size={22} />
-                +{totalToReceive.toLocaleString()}원 수령 확인
+                <span className="relative z-10 flex items-center gap-3">
+                  <Check size={22} />
+                  +{totalToReceive.toLocaleString()}원 수령 확인
+                </span>
               </button>
             )}
 
@@ -727,7 +731,7 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
       {/* 플로팅 버튼 - 지출 추가 */}
       <button
         onClick={() => setShowExpenseTest(true)}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-blue-500 text-white rounded-2xl flex items-center justify-center transition-all hover:-translate-y-0.5 active:translate-y-0 z-40 shadow-[0_4px_14px_0_rgba(59,130,246,0.4)] hover:shadow-[0_6px_20px_0_rgba(59,130,246,0.5)]"
+        className="btn-fab fixed bottom-6 right-6 w-14 h-14 bg-blue-500 text-white rounded-2xl flex items-center justify-center z-40 shadow-[0_4px_14px_0_rgba(59,130,246,0.4)]"
       >
         <Plus size={28} />
       </button>
@@ -1483,9 +1487,9 @@ const ExpenseTestModal = ({ isOpen, onClose, gathering, onSuccess }) => {
               value={formData.totalAmount}
               onChange={(e) => handleInputChange('totalAmount', e.target.value)}
               placeholder="0"
-              className="w-full px-4 py-4 text-2xl font-bold text-right border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="w-full pl-4 pr-12 py-4 text-2xl font-bold text-right border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-300 dark:placeholder-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             />
-            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xl font-medium text-gray-400">
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xl font-medium text-gray-400 pointer-events-none">
               원
             </span>
           </div>
@@ -1663,7 +1667,11 @@ const SettlementItem = ({ settlement, currentUser, onComplete, onConfirm }) => {
             }`}
           >
             {loading ? (
-              <span className="w-4 h-4 border-2 border-gray-300 border-t-transparent rounded-full animate-spin" />
+              <span className="loading-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+              </span>
             ) : (
               <>
                 {settlement.status === 'PENDING' ? <Send size={14} /> : <Check size={14} />}
@@ -1682,7 +1690,11 @@ const SettlementItem = ({ settlement, currentUser, onComplete, onConfirm }) => {
             }`}
           >
             {loading ? (
-              <span className="w-4 h-4 border-2 border-gray-300 border-t-transparent rounded-full animate-spin" />
+              <span className="loading-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+              </span>
             ) : (
               <>
                 {settlement.status === 'CONFIRMED' ? <Check size={14} /> : <Clock size={14} />}

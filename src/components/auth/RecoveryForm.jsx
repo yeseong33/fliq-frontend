@@ -88,7 +88,7 @@ const RecoveryForm = ({ onSwitchToLogin }) => {
     return (
       <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-          <h1 className="text-center text-4xl font-bold bg-gradient-to-r from-blue-500 to-indigo-500 bg-clip-text text-transparent">
+          <h1 className="text-center text-4xl font-bold text-blue-600 dark:text-blue-500">
             Fliq
           </h1>
           <div className="mt-10">
@@ -114,7 +114,7 @@ const RecoveryForm = ({ onSwitchToLogin }) => {
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <h1 className="text-center text-4xl font-bold bg-gradient-to-r from-blue-500 to-indigo-500 bg-clip-text text-transparent">
+        <h1 className="text-center text-4xl font-bold text-blue-600 dark:text-blue-500">
           Fliq
         </h1>
         <p className="mt-4 text-center text-gray-500 dark:text-gray-400">
@@ -177,16 +177,19 @@ const RecoveryForm = ({ onSwitchToLogin }) => {
           <button
             type="submit"
             disabled={loading || (isV2Required && !isV2Ready)}
-            className="w-full py-4 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-bold text-lg rounded-2xl shadow-lg shadow-blue-500/25 transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2"
+            className="btn-action btn-action-primary w-full py-4 text-white font-bold text-lg rounded-2xl disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            {loading ? (
-              <>
-                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                처리중...
-              </>
-            ) : (
-              '인증번호 받기'
-            )}
+            <span className="relative z-10 flex items-center gap-2">
+              {loading ? (
+                <span className="loading-dots">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </span>
+              ) : (
+                '인증번호 받기'
+              )}
+            </span>
           </button>
 
           <p className="text-center text-sm text-gray-500 dark:text-gray-400">
