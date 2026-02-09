@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Mail, LogOut, ChevronRight, Sun, Moon, CreditCard, UserX } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
@@ -9,6 +9,8 @@ import Button from '../components/common/Button';
 import Modal from '../components/common/Modal';
 import Input from '../components/common/Input';
 import toast from 'react-hot-toast';
+import usePullToRefresh from '../hooks/usePullToRefresh';
+import PullToRefresh from '../components/common/PullToRefresh';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -20,6 +22,13 @@ const ProfilePage = () => {
   const [newName, setNewName] = useState(user?.name || '');
   const [loading, setLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+
+  const handleRefresh = useCallback(async () => {
+    // 프로필 페이지는 로컬 상태만 사용하므로 짧은 딜레이로 새로고침 느낌
+    await new Promise(r => setTimeout(r, 300));
+  }, []);
+
+  const { state: pullState, pullDistance } = usePullToRefresh(handleRefresh);
 
   const handleLogout = () => {
     logout();
@@ -70,6 +79,7 @@ const ProfilePage = () => {
 
   return (
     <div className="page">
+      <PullToRefresh state={pullState} pullDistance={pullDistance}>
       <div className="page-content">
         {/* 타이틀 */}
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
@@ -203,6 +213,7 @@ const ProfilePage = () => {
           </button>
         </div>
       </div>
+      </PullToRefresh>
 
       {/* 이름 수정 모달 */}
       <Modal

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, QrCode } from 'lucide-react';
 import { useGathering } from '../hooks/useGathering';
@@ -6,6 +6,8 @@ import { useAuthStore } from '../store/authStore';
 import { useAccountCheck } from '../hooks/useAccountCheck';
 import GatheringList from '../components/gathering/GatheringList';
 import AccountRequiredModal from '../components/common/AccountRequiredModal';
+import usePullToRefresh from '../hooks/usePullToRefresh';
+import PullToRefresh from '../components/common/PullToRefresh';
 
 const MainPage = () => {
   const navigate = useNavigate();
@@ -28,13 +30,15 @@ const MainPage = () => {
     }
   }, [isAuthenticated, user]);
 
-  const loadGatherings = async () => {
+  const loadGatherings = useCallback(async () => {
     try {
       await getMyGatherings();
     } catch (error) {
       console.error('모임 목록 조회 실패:', error);
     }
-  };
+  }, [getMyGatherings]);
+
+  const { state: pullState, pullDistance } = usePullToRefresh(loadGatherings);
 
   // 계좌 체크 후 모임 생성
   const handleCreateClick = () => {
@@ -53,6 +57,7 @@ const MainPage = () => {
 
   return (
     <div className="page">
+      <PullToRefresh state={pullState} pullDistance={pullDistance}>
       <div className="page-content">
         {/* 타이틀 */}
         <div className="flex items-center justify-between mb-6">
@@ -83,6 +88,7 @@ const MainPage = () => {
           loading={loading}
         />
       </div>
+      </PullToRefresh>
 
       {/* 계좌 등록 모달 */}
       <AccountRequiredModal

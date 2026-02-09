@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CreditCard } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -7,6 +7,8 @@ import { useAuth } from '../hooks/useAuth';
 import { GATHERING_STATUS } from '../utils/constants';
 import Button from '../components/common/Button';
 import GatheringDetail from '../components/gathering/GatheringDetail';
+import usePullToRefresh from '../hooks/usePullToRefresh';
+import PullToRefresh from '../components/common/PullToRefresh';
 
 const GatheringPage = () => {
   const { id } = useParams();
@@ -28,7 +30,7 @@ const GatheringPage = () => {
     };
   }, [id]);
 
-  const loadGathering = async () => {
+  const loadGathering = useCallback(async () => {
     try {
       await getGathering(id);
       // 최근 본 모임 ID 저장
@@ -37,7 +39,9 @@ const GatheringPage = () => {
       toast.error('모임 정보를 불러올 수 없습니다.');
       navigate('/');
     }
-  };
+  }, [id, getGathering, navigate]);
+
+  const { state: pullState, pullDistance } = usePullToRefresh(loadGathering);
 
   const handleGatheringUpdate = (updatedGathering) => {
     // 상태가 업데이트되면 다시 로딩
@@ -76,6 +80,7 @@ const GatheringPage = () => {
 
   return (
     <div className="page">
+      <PullToRefresh state={pullState} pullDistance={pullDistance}>
       <div className="page-content">
         <GatheringDetail
           gathering={currentGathering}
@@ -99,6 +104,7 @@ const GatheringPage = () => {
           </div>
         )}
       </div>
+      </PullToRefresh>
     </div>
   );
 };
