@@ -4,7 +4,6 @@ import { usePayment } from '../../hooks/usePayment';
 import { formatCurrency, formatDate } from '../../utils/helpers';
 import { PAYMENT_STATUS, PAYMENT_STATUS_LABELS } from '../../utils/constants';
 import Button from '../common/Button';
-import Loading from '../common/Loading';
 
 const PaymentStatus = ({ gatheringId, onRetry }) => {
   const { getMyPaymentStatus, loading } = usePayment();
@@ -52,7 +51,7 @@ const PaymentStatus = ({ gatheringId, onRetry }) => {
   };
 
   if (loading && !paymentInfo) {
-    return <Loading message="결제 상태를 확인하고 있습니다..." />;
+    return null;
   }
 
   if (!paymentInfo) {

@@ -6,7 +6,6 @@ import { useAuth } from '../../hooks/useAuth';
 import { formatCurrency, formatDate } from '../../utils/helpers';
 import { PAYMENT_STATUS, PAYMENT_STATUS_LABELS } from '../../utils/constants';
 import { settlementAPI } from '../../api';
-import Loading from '../common/Loading';
 import SequentialTransfer from './SequentialTransfer';
 
 const PaymentHistory = ({ gatheringId }) => {
@@ -158,7 +157,7 @@ const PaymentHistory = ({ gatheringId }) => {
   );
 
   if (loading && settlementsLoading) {
-    return <Loading message="결제 내역을 불러오고 있습니다..." />;
+    return null;
   }
 
   return (

@@ -1,11 +1,14 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, User } from 'lucide-react';
+import { useNavigationStore } from '../../store/navigationStore';
 
 const Header = ({ title, showBack = false, showProfile = false, transparent = false }) => {
   const navigate = useNavigate();
+  const { setBack } = useNavigationStore();
 
   const handleBack = () => {
+    setBack(); // 뒤로가기 방향 설정
     navigate(-1);
   };
 

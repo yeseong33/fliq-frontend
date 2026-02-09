@@ -27,25 +27,7 @@ const GatheringList = ({ gatherings, loading }) => {
   };
 
   if (loading) {
-    return (
-      <div className="space-y-4">
-        {[...Array(3)].map((_, i) => (
-          <div key={i} className="card animate-pulse">
-            <div className="flex justify-between items-start mb-4">
-              <div className="flex-1">
-                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded-lg w-3/4 mb-3"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded-lg w-2/3"></div>
-              </div>
-              <div className="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded-full ml-4"></div>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
-              <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
+    return null;
   }
 
   if (gatherings.length === 0) {

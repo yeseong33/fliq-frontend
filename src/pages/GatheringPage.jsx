@@ -5,9 +5,7 @@ import toast from 'react-hot-toast';
 import { useGathering } from '../hooks/useGathering';
 import { useAuth } from '../hooks/useAuth';
 import { GATHERING_STATUS } from '../utils/constants';
-import Header from '../components/common/Header';
 import Button from '../components/common/Button';
-import Loading from '../components/common/Loading';
 import GatheringDetail from '../components/gathering/GatheringDetail';
 import PaymentHistory from '../components/payment/PaymentHistory';
 
@@ -35,6 +33,8 @@ const GatheringPage = () => {
   const loadGathering = async () => {
     try {
       await getGathering(id);
+      // 최근 본 모임 ID 저장
+      localStorage.setItem('lastViewedGatheringId', id);
     } catch (error) {
       toast.error('모임 정보를 불러올 수 없습니다.');
       navigate('/');
@@ -55,20 +55,12 @@ const GatheringPage = () => {
   const hasPaymentRequest = currentGathering?.totalAmount != null;
 
   if (loading && !currentGathering) {
-    return (
-      <div className="page">
-        <Header title="모임" showBack={true} showProfile={true} />
-        <div className="page-content">
-          <Loading message="모임 정보를 불러오고 있습니다..." />
-        </div>
-      </div>
-    );
+    return null;
   }
 
   if (!currentGathering) {
     return (
       <div className="page">
-        <Header title="모임을 찾을 수 없습니다" showBack={true} />
         <div className="page-content">
           <div className="card text-center">
             <p className="text-gray-600">존재하지 않는 모임입니다.</p>
@@ -87,12 +79,6 @@ const GatheringPage = () => {
 
   return (
     <div className="page">
-      <Header
-        title=""
-        showBack={true}
-        showProfile={true}
-      />
-      
       <div className="page-content">
         {/* 탭 네비게이션 */}
         <div className="flex gap-2 mb-6 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
@@ -120,7 +106,7 @@ const GatheringPage = () => {
 
         {/* 탭 콘텐츠 */}
         {activeTab === 'details' && (
-          <GatheringDetail 
+          <GatheringDetail
             gathering={currentGathering}
             onUpdate={handleGatheringUpdate}
           />
@@ -132,7 +118,7 @@ const GatheringPage = () => {
 
         {/* 결제하기 버튼 (참여자용) */}
         {!isOwner && canPay && (
-          <div className="fixed bottom-0 left-0 right-0 p-6 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-t border-gray-200/50 dark:border-gray-700/50">
+          <div className="fixed bottom-0 left-0 right-0 p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-t border-gray-200/50 dark:border-gray-700/50">
             <div className="max-w-md mx-auto">
               <Button
                 fullWidth

@@ -4,9 +4,16 @@ import { X } from 'lucide-react';
 const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      // 모달 열릴 때 스크롤 위치 저장 및 배경 스크롤 방지
+      const scrollY = window.scrollY;
+      document.body.classList.add('modal-open');
+      document.body.style.top = `-${scrollY}px`;
     } else {
-      document.body.style.overflow = 'unset';
+      // 모달 닫힐 때 스크롤 위치 복원
+      const scrollY = document.body.style.top;
+      document.body.classList.remove('modal-open');
+      document.body.style.top = '';
+      window.scrollTo(0, parseInt(scrollY || '0') * -1);
     }
 
     // ESC 키로 닫기
@@ -18,7 +25,8 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
     }
 
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.classList.remove('modal-open');
+      document.body.style.top = '';
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen, onClose]);

@@ -4,7 +4,6 @@ import toast from 'react-hot-toast';
 import { useGathering } from '../hooks/useGathering';
 import { PAYMENT_STATUS } from '../utils/constants';
 import Header from '../components/common/Header';
-import Loading from '../components/common/Loading';
 import PaymentForm from '../components/payment/PaymentForm';
 import PaymentStatus from '../components/payment/PaymentStatus';
 
@@ -40,14 +39,7 @@ const PaymentPage = () => {
   };
 
   if (loading || currentView === 'loading') {
-    return (
-      <div className="page">
-        <Header title="결제" showBack={true} />
-        <div className="page-content">
-          <Loading message="결제 정보를 준비하고 있습니다..." />
-        </div>
-      </div>
-    );
+    return null;
   }
 
   if (!currentGathering) {

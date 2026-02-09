@@ -99,9 +99,12 @@ const PaymentMethodPage = () => {
           </div>
 
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-12">
-              <div className="w-10 h-10 border-3 border-gray-200 dark:border-gray-700 border-t-blue-500 rounded-full animate-spin" />
-              <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">로딩 중...</p>
+            <div className="flex justify-center py-12 text-gray-400 dark:text-gray-500">
+              <span className="loading-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+              </span>
             </div>
           ) : paymentMethods.length > 0 ? (
             <div className="space-y-3">

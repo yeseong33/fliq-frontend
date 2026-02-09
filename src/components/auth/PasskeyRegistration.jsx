@@ -103,7 +103,7 @@ const PasskeyRegistration = ({ onBack }) => {
         {/* 로딩 상태 */}
         {loading && (
           <div className="flex flex-col items-center py-8">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/25 animate-pulse">
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/25 ">
               <svg
                 className="w-8 h-8 text-white"
                 fill="none"

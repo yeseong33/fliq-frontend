@@ -1,16 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Users, QrCode, CreditCard, Receipt, Clock, Pencil, FlaskConical, Calculator, Send, Check, ArrowRight, Settings, Plus, PartyPopper } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
+import { Users, QrCode, CreditCard, Receipt, Clock, Pencil, FlaskConical, Calculator, Send, Check, ArrowRight, Settings, Plus, PartyPopper, ChevronRight, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DOMPurify from 'dompurify';
 import { useGathering } from '../../hooks/useGathering';
 import { useAuth } from '../../hooks/useAuth';
+import { useNavigationStore } from '../../store/navigationStore';
 import { formatCurrency, getStatusColor } from '../../utils/helpers';
 import { GATHERING_STATUS } from '../../utils/constants';
 import { expenseAPI, settlementAPI } from '../../api';
 import Button from '../common/Button';
 import Input from '../common/Input';
 import Modal from '../common/Modal';
-import QRCodeDisplay from './QRCodeDisplay';
 import SequentialTransfer from '../payment/SequentialTransfer';
 import SequentialConfirm from '../payment/SequentialConfirm';
 
@@ -138,12 +140,12 @@ const CelebrationOverlay = ({ show, type = 'send', onComplete }) => {
 };
 
 const GatheringDetail = ({ gathering, onUpdate }) => {
+  const navigate = useNavigate();
   const { user } = useAuth();
+  const { setUp } = useNavigationStore();
   const { createPaymentRequest, updateGathering, loading } = useGathering();
-  const [showQR, setShowQR] = useState(false);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [showTimeEdit, setShowTimeEdit] = useState(false);
-  const [showExpenseTest, setShowExpenseTest] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState(null);
   const [totalAmount, setTotalAmount] = useState('');
   const [expenses, setExpenses] = useState([]);
@@ -157,6 +159,8 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
   const [myPendingSettlements, setMyPendingSettlements] = useState([]);
   const [showSequentialConfirm, setShowSequentialConfirm] = useState(false);
   const [myReceiveSettlements, setMyReceiveSettlements] = useState([]);
+  const [transferState, setTransferState] = useState(null);
+  const [confirmState, setConfirmState] = useState(null);
 
   // 지출 목록 조회
   const fetchExpenses = async () => {
@@ -396,11 +400,15 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
       {showSequentialTransfer && (
         <SequentialTransfer
           settlements={myPendingSettlements}
-          onClose={() => setShowSequentialTransfer(false)}
+          onClose={() => {
+            setShowSequentialTransfer(false);
+            setTransferState(null);
+          }}
           onComplete={() => {
             fetchSettlements();
             setCelebrationType('send');
           }}
+          onStateChange={setTransferState}
         />
       )}
 
@@ -408,11 +416,15 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
       {showSequentialConfirm && (
         <SequentialConfirm
           settlements={myReceiveSettlements}
-          onClose={() => setShowSequentialConfirm(false)}
+          onClose={() => {
+            setShowSequentialConfirm(false);
+            setConfirmState(null);
+          }}
           onComplete={() => {
             fetchSettlements();
             setCelebrationType('receive');
           }}
+          onStateChange={setConfirmState}
         />
       )}
 
@@ -437,7 +449,10 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
           </div>
           {isOwner && (
             <button
-              onClick={() => setShowQR(true)}
+              onClick={() => {
+                setUp();
+                navigate(`/gathering/${gathering.id}/qr`);
+              }}
               className="p-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
               <QrCode size={20} />
@@ -446,105 +461,6 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
         </div>
       </div>
 
-      {/* 정산 현황 (간소화) */}
-      {(() => {
-        const toSend = settlements.filter(
-          (s) => s.fromUser?.id === user?.id || s.fromUser?.email === user?.email
-        );
-        const toReceive = settlements.filter(
-          (s) => s.toUser?.id === user?.id || s.toUser?.email === user?.email
-        );
-
-        // 내가 보내야 할 금액 (PENDING 상태만)
-        const pendingToSend = toSend.filter(s => s.status === 'PENDING');
-        const totalToSend = pendingToSend.reduce((sum, s) => sum + (s.amount || 0), 0);
-
-        // 내가 받아야 할 금액 (PENDING + COMPLETED 상태)
-        const pendingToReceive = toReceive.filter(s => s.status === 'PENDING' || s.status === 'COMPLETED');
-        const totalToReceive = pendingToReceive.reduce((sum, s) => sum + (s.amount || 0), 0);
-
-        // 송금 완료된 금액 (내가 보낸 것)
-        const completedToSend = toSend.filter(s => s.status === 'COMPLETED' || s.status === 'CONFIRMED');
-        const totalCompleted = completedToSend.reduce((sum, s) => sum + (s.amount || 0), 0);
-
-        // 수령 완료된 금액 (내가 받은 것)
-        const confirmedToReceive = toReceive.filter(s => s.status === 'CONFIRMED');
-        const totalReceived = confirmedToReceive.reduce((sum, s) => sum + (s.amount || 0), 0);
-
-        // 순차 송금 화면 열기
-        const handleOpenTransfer = () => {
-          if (pendingToSend.length === 0) return;
-          setMyPendingSettlements(pendingToSend);
-          setShowSequentialTransfer(true);
-        };
-
-        // 순차 수령 확인 화면 열기
-        const handleOpenConfirm = () => {
-          if (pendingToReceive.length === 0) return;
-          setMyReceiveSettlements(pendingToReceive);
-          setShowSequentialConfirm(true);
-        };
-
-        // 정산이 없거나 나와 관련 없으면 표시 안함
-        if (settlements.length === 0 || (toSend.length === 0 && toReceive.length === 0)) {
-          return null;
-        }
-
-        // 내 실제 지출 (모든 지출에서 내 분담금 합계)
-        const myTotalExpense = expenses.reduce((sum, expense) => {
-          const myShare = expense.participants?.find(
-            p => p.user?.id === user?.id || p.user?.email === user?.email
-          );
-          return sum + (myShare?.shareAmount || 0);
-        }, 0);
-
-        return (
-          <div className="space-y-4">
-            {/* 송금 버튼 or 완료 표시 */}
-            {toSend.length > 0 && (
-              totalToSend > 0 ? (
-                <button
-                  onClick={handleOpenTransfer}
-                  className="btn-action btn-action-primary w-full flex items-center justify-center gap-3 py-5 text-white font-bold text-xl rounded-2xl shadow-[0_4px_14px_0_rgba(59,130,246,0.4)]"
-                >
-                  <span className="relative z-10 flex items-center gap-3">
-                    <Send size={22} />
-                    {totalToSend.toLocaleString()}원 송금하기
-                  </span>
-                </button>
-              ) : (
-                <div className="w-full flex items-center justify-center gap-3 py-5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-bold text-xl rounded-2xl shadow-[0_4px_14px_0_rgba(59,130,246,0.15)]">
-                  <Check size={22} />
-                  송금 완료
-                </div>
-              )
-            )}
-
-            {/* 받을 금액 (있을 때만) */}
-            {toReceive.length > 0 && totalToReceive > 0 && (
-              <button
-                onClick={handleOpenConfirm}
-                className="btn-action btn-action-success w-full flex items-center justify-center gap-3 py-5 text-white font-bold text-xl rounded-2xl shadow-[0_4px_14px_0_rgba(34,197,94,0.4)]"
-              >
-                <span className="relative z-10 flex items-center gap-3">
-                  <Check size={22} />
-                  +{totalToReceive.toLocaleString()}원 수령 확인
-                </span>
-              </button>
-            )}
-
-            {/* 내 지출 (실제 분담금 합계) */}
-            {myTotalExpense > 0 && (
-              <div className="flex items-center justify-between px-5 py-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl shadow-[0_2px_8px_0_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_0_rgba(0,0,0,0.2)]">
-                <span className="text-gray-500 dark:text-gray-400">내 지출</span>
-                <span className="font-bold text-lg text-gray-900 dark:text-white">
-                  {myTotalExpense.toLocaleString()}원
-                </span>
-              </div>
-            )}
-          </div>
-        );
-      })()}
 
       {/* 탭 네비게이션 */}
       {/* 탭 네비게이션 */}
@@ -598,8 +514,12 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
               )}
             </div>
             {expensesLoading ? (
-              <div className="text-center py-4 text-gray-500 dark:text-gray-400">
-                로딩 중...
+              <div className="flex justify-center py-4 text-gray-400 dark:text-gray-500">
+                <span className="loading-dots">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </span>
               </div>
             ) : expenses.length > 0 ? (
               <div className="space-y-2">
@@ -630,6 +550,21 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
               </div>
             )}
           </div>
+
+          {/* 지출 등록 버튼 */}
+          <button
+            onClick={() => {
+              setUp();
+              navigate(`/gathering/${gathering.id}/expense/new`);
+            }}
+            className="w-full px-5 py-4 bg-white dark:bg-gray-800/50 rounded-2xl shadow-[0_2px_8px_0_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_0_rgba(0,0,0,0.2)] flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all"
+          >
+            <div className="flex items-center gap-3">
+              <Plus size={20} className="text-gray-400" />
+              <span className="text-gray-900 dark:text-white">지출 등록</span>
+            </div>
+            <ArrowRight size={16} className="text-gray-400" />
+          </button>
 
           {/* 정산 계산 버튼 (방장 + 지출 존재 시) */}
           {isOwner && expenses.length > 0 && (
@@ -728,36 +663,8 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
               <ArrowRight size={16} className="text-gray-400" />
             </button>
           )}
-
-          {/* 지출 등록 */}
-          <button
-            onClick={() => setShowExpenseTest(true)}
-            className="w-full px-5 py-4 bg-white dark:bg-gray-800/50 rounded-2xl shadow-[0_2px_8px_0_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_0_rgba(0,0,0,0.2)] flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all"
-          >
-            <div className="flex items-center gap-3">
-              <Plus size={20} className="text-gray-400" />
-              <span className="text-gray-900 dark:text-white">지출 등록</span>
-            </div>
-            <ArrowRight size={16} className="text-gray-400" />
-          </button>
         </div>
       )}
-
-      {/* 플로팅 버튼 - 지출 추가 */}
-      <button
-        onClick={() => setShowExpenseTest(true)}
-        className="btn-fab fixed bottom-6 right-6 w-14 h-14 bg-blue-500 text-white rounded-2xl flex items-center justify-center z-40 shadow-[0_4px_14px_0_rgba(59,130,246,0.4)]"
-      >
-        <Plus size={28} />
-      </button>
-
-      {/* QR 코드 모달 */}
-      <QRCodeDisplay
-        isOpen={showQR}
-        onClose={() => setShowQR(false)}
-        gathering={gathering}
-        onRefresh={onUpdate}
-      />
 
       {/* 결제 요청 모달 */}
       <Modal 
@@ -827,14 +734,6 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
         loading={loading}
       />
 
-      {/* 지출 테스트 모달 */}
-      <ExpenseTestModal
-        isOpen={showExpenseTest}
-        onClose={() => setShowExpenseTest(false)}
-        gathering={gathering}
-        onSuccess={fetchExpenses}
-      />
-
       {/* 지출 상세 모달 */}
       <ExpenseDetailModal
         isOpen={!!selectedExpense}
@@ -845,8 +744,232 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
         categoryLabels={CATEGORY_LABELS}
         gathering={gathering}
       />
+
+      {/* 하단 고정 정산 바 */}
+      <SettlementBottomBar
+        settlements={settlements}
+        user={user}
+        onTransfer={(pendingList) => {
+          setMyPendingSettlements(pendingList);
+          setShowSequentialTransfer(true);
+        }}
+        onConfirm={(receiveList) => {
+          setMyReceiveSettlements(receiveList);
+          setShowSequentialConfirm(true);
+        }}
+        transferState={transferState}
+        confirmState={confirmState}
+        isTransferOpen={showSequentialTransfer}
+        isConfirmOpen={showSequentialConfirm}
+      />
     </div>
   );
+};
+
+// 하단 고정 정산 바 컴포넌트 (Portal 사용)
+const SettlementBottomBar = ({ settlements, user, onTransfer, onConfirm, transferState, confirmState, isTransferOpen, isConfirmOpen }) => {
+  const toSend = settlements.filter(
+    (s) => s.fromUser?.id === user?.id || s.fromUser?.email === user?.email
+  );
+  const toReceive = settlements.filter(
+    (s) => s.toUser?.id === user?.id || s.toUser?.email === user?.email
+  );
+
+  // 내가 보내야 할 금액 (PENDING 상태만)
+  const pendingToSend = toSend.filter(s => s.status === 'PENDING');
+  const totalToSend = pendingToSend.reduce((sum, s) => sum + (s.amount || 0), 0);
+
+  // 내가 받아야 할 금액 (PENDING + COMPLETED 상태)
+  const pendingToReceive = toReceive.filter(s => s.status === 'PENDING' || s.status === 'COMPLETED');
+  const totalToReceive = pendingToReceive.reduce((sum, s) => sum + (s.amount || 0), 0);
+
+  // 정산 계산 전
+  const noSettlements = settlements.length === 0;
+  // 나와 관련된 정산이 없음
+  const noMySettlements = !noSettlements && toSend.length === 0 && toReceive.length === 0;
+  // 모든 정산 완료
+  const allCompleted = !noSettlements && !noMySettlements &&
+    toSend.every(s => s.status === 'CONFIRMED') &&
+    toReceive.every(s => s.status === 'CONFIRMED');
+
+  const handleTransfer = () => {
+    if (pendingToSend.length > 0) {
+      onTransfer(pendingToSend);
+    }
+  };
+
+  const handleConfirm = () => {
+    if (pendingToReceive.length > 0) {
+      onConfirm(pendingToReceive);
+    }
+  };
+
+  // 송금 페이지가 열려있을 때 버튼 렌더링
+  const renderTransferButtons = () => {
+    if (!transferState) return null;
+    const { currentSettlement, hasOpenedToss, isProcessing, canSkip, handleTransfer: doTransfer, handleMarkComplete, handleSkip } = transferState;
+
+    return (
+      <div className="space-y-2">
+        {hasOpenedToss ? (
+          <button
+            onClick={handleMarkComplete}
+            disabled={isProcessing}
+            className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white font-bold rounded-2xl shadow-lg shadow-green-500/30 transition-colors"
+          >
+            {isProcessing ? (
+              <span className="loading-dots"><span></span><span></span><span></span></span>
+            ) : (
+              <>
+                <Check size={18} />
+                <span>송금 완료했어요</span>
+              </>
+            )}
+          </button>
+        ) : (
+          <button
+            onClick={doTransfer}
+            disabled={!currentSettlement?.tossDeeplink}
+            className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/30 transition-colors"
+          >
+            <Send size={18} />
+            <span>{currentSettlement?.amount?.toLocaleString()}원 송금</span>
+          </button>
+        )}
+        {canSkip && (
+          <button
+            onClick={handleSkip}
+            className="w-full py-2 text-gray-500 dark:text-gray-400 text-sm font-medium flex items-center justify-center gap-1"
+          >
+            다음에 할게요
+            <ChevronRight size={14} />
+          </button>
+        )}
+      </div>
+    );
+  };
+
+  // 수령 확인 페이지가 열려있을 때 버튼 렌더링
+  const renderConfirmButtons = () => {
+    if (!confirmState) return null;
+    const { currentSettlement, isCompleted, isProcessing, canSkip, handleConfirm: doConfirm, handleReject, handleSkip } = confirmState;
+
+    return (
+      <div className="space-y-2">
+        {isCompleted ? (
+          <>
+            <button
+              onClick={doConfirm}
+              disabled={isProcessing}
+              className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white font-bold rounded-2xl shadow-lg shadow-green-500/30 transition-colors"
+            >
+              {isProcessing ? (
+                <span className="loading-dots"><span></span><span></span><span></span></span>
+              ) : (
+                <>
+                  <Check size={18} />
+                  <span>+{currentSettlement?.amount?.toLocaleString()}원 확인</span>
+                </>
+              )}
+            </button>
+            <button
+              onClick={handleReject}
+              disabled={isProcessing}
+              className="w-full py-2 text-red-500 dark:text-red-400 text-sm font-medium flex items-center justify-center gap-1 disabled:opacity-50"
+            >
+              <X size={14} />
+              송금 받지 못했어요
+            </button>
+          </>
+        ) : (
+          <>
+            <div className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 font-bold rounded-2xl">
+              <Clock size={18} />
+              <span>송금 대기 중</span>
+            </div>
+            <button
+              onClick={handleSkip}
+              className="w-full py-2 text-gray-500 dark:text-gray-400 text-sm font-medium flex items-center justify-center gap-1"
+            >
+              {canSkip ? (
+                <>
+                  건너뛰기
+                  <ChevronRight size={14} />
+                </>
+              ) : (
+                '닫기'
+              )}
+            </button>
+          </>
+        )}
+      </div>
+    );
+  };
+
+  // 기본 버튼 렌더링 - 송금 우선, 없으면 정산 확인, 둘 다 없으면 회색
+  const renderDefaultButtons = () => {
+    // 송금할 게 있으면 송금 버튼
+    if (totalToSend > 0) {
+      return (
+        <button
+          onClick={handleTransfer}
+          className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/30 transition-colors"
+        >
+          <Send size={18} />
+          <span>{totalToSend.toLocaleString()}원 송금</span>
+        </button>
+      );
+    }
+    // 정산 확인할 게 있으면 정산 버튼
+    if (totalToReceive > 0) {
+      return (
+        <button
+          onClick={handleConfirm}
+          className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-green-500 hover:bg-green-600 text-white font-bold rounded-2xl shadow-lg shadow-green-500/30 transition-colors"
+        >
+          <Check size={18} />
+          <span>+{totalToReceive.toLocaleString()}원 확인</span>
+        </button>
+      );
+    }
+    // 모든 정산 완료 - 회색
+    if (allCompleted) {
+      return (
+        <div className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 font-medium rounded-2xl shadow-lg">
+          <Check size={18} />
+          <span>모든 정산 완료</span>
+        </div>
+      );
+    }
+    // 정산 없음 또는 내 정산 없음 - 회색 버튼
+    return (
+      <div className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 font-medium rounded-2xl shadow-lg">
+        <Clock size={18} />
+        <span>{noSettlements ? '정산 대기중' : '정산 내역 없음'}</span>
+      </div>
+    );
+  };
+
+  // 송금/확인 페이지가 열려있으면 해당 버튼만, 아니면 기본 버튼
+  const renderContent = () => {
+    if (isTransferOpen) {
+      return transferState ? renderTransferButtons() : null;
+    }
+    if (isConfirmOpen) {
+      return confirmState ? renderConfirmButtons() : null;
+    }
+    return renderDefaultButtons();
+  };
+
+  const content = (
+    <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] left-0 right-0 px-4 z-50">
+      <div className="max-w-md mx-auto">
+        {renderContent()}
+      </div>
+    </div>
+  );
+
+  return createPortal(content, document.body);
 };
 
 // 지출 상세 모달 컴포넌트
@@ -1353,270 +1476,6 @@ const TimeEditModal = ({ isOpen, onClose, startAt, endAt, onSave, loading }) => 
           </Button>
           <Button type="button" fullWidth loading={loading} onClick={handleSave}>
             저장
-          </Button>
-        </div>
-      </div>
-    </Modal>
-  );
-};
-
-// 지출 등록 모달 컴포넌트
-const ExpenseTestModal = ({ isOpen, onClose, gathering, onSuccess }) => {
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    totalAmount: '',
-    description: '',
-    category: 'FOOD',
-    paidAt: Date.now(),
-  });
-  const [participantShares, setParticipantShares] = useState([]);
-
-  const CATEGORIES = [
-    { value: 'FOOD', label: '식사', icon: '🍽️' },
-    { value: 'TRANSPORT', label: '교통', icon: '🚗' },
-    { value: 'ACCOMMODATION', label: '숙박', icon: '🏨' },
-    { value: 'ENTERTAINMENT', label: '오락', icon: '🎮' },
-    { value: 'SHOPPING', label: '쇼핑', icon: '🛍️' },
-    { value: 'OTHER', label: '기타', icon: '📦' },
-  ];
-
-  // 모달 열릴 때 참여자 목록 초기화 (방장 포함)
-  useEffect(() => {
-    if (isOpen && gathering) {
-      const allParticipants = [];
-
-      // 방장 추가
-      if (gathering.owner) {
-        allParticipants.push({
-          userId: gathering.owner.id,
-          userName: gathering.owner.name || '방장',
-          isOwner: true,
-          included: true,
-        });
-      }
-
-      // 나머지 참여자 추가 (방장 제외)
-      if (gathering.participants) {
-        gathering.participants.forEach(p => {
-          const participantId = p.user?.id || p.id;
-          if (participantId !== gathering.owner?.id) {
-            allParticipants.push({
-              userId: participantId,
-              userName: p.user?.name || p.name || '알 수 없음',
-              isOwner: false,
-              included: true,
-            });
-          }
-        });
-      }
-
-      setParticipantShares(allParticipants);
-      // 폼 초기화
-      setFormData({
-        totalAmount: '',
-        description: '',
-        category: 'FOOD',
-        paidAt: Date.now(),
-      });
-    }
-  }, [isOpen, gathering]);
-
-  const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleToggleParticipant = (userId) => {
-    setParticipantShares(prev => prev.map(p =>
-      p.userId === userId ? { ...p, included: !p.included } : p
-    ));
-  };
-
-  const handleToggleAll = () => {
-    const allIncluded = participantShares.every(p => p.included);
-    setParticipantShares(prev => prev.map(p => ({ ...p, included: !allIncluded })));
-  };
-
-  const MAX_AMOUNT = 99999999;
-
-  const handleSubmit = async () => {
-    const amount = parseFloat(formData.totalAmount);
-    if (!formData.totalAmount || isNaN(amount) || amount <= 0) {
-      toast.error('금액을 입력해주세요');
-      return;
-    }
-    if (amount > MAX_AMOUNT) {
-      toast.error(`최대 금액은 ${MAX_AMOUNT.toLocaleString()}원입니다`);
-      return;
-    }
-
-    const includedParticipants = participantShares.filter(p => p.included);
-    if (includedParticipants.length === 0) {
-      toast.error('최소 1명의 참여자를 선택해주세요');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const requestData = {
-        gatheringId: gathering.id,
-        totalAmount: amount,
-        description: formData.description || undefined,
-        category: formData.category,
-        paidAt: formData.paidAt,
-        shareType: 'EQUAL',
-        participants: includedParticipants.map(p => ({
-          userId: p.userId,
-          shareValue: 0,
-        })),
-      };
-
-      await expenseAPI.create(requestData);
-      toast.success('지출이 등록되었습니다');
-      onSuccess?.();
-      onClose();
-    } catch (error) {
-      console.error('Expense Error:', error);
-      toast.error(error.response?.data?.message || '지출 등록에 실패했습니다');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const includedCount = participantShares.filter(p => p.included).length;
-  const perPersonAmount = includedCount > 0 && formData.totalAmount
-    ? Math.ceil(parseFloat(formData.totalAmount) / includedCount)
-    : 0;
-
-  return (
-    <Modal isOpen={isOpen} onClose={onClose} title="지출 등록">
-      <div className="space-y-5">
-        {/* 금액 입력 */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            금액
-          </label>
-          <div className="relative">
-            <input
-              type="number"
-              inputMode="numeric"
-              value={formData.totalAmount}
-              onChange={(e) => handleInputChange('totalAmount', e.target.value)}
-              placeholder="0"
-              className="w-full pl-4 pr-12 py-4 text-2xl font-bold text-right border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-300 dark:placeholder-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-            />
-            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xl font-medium text-gray-400 pointer-events-none">
-              원
-            </span>
-          </div>
-          {formData.totalAmount && includedCount > 0 && (
-            <p className="text-sm text-blue-600 dark:text-blue-400 mt-2 text-right">
-              1인당 {perPersonAmount.toLocaleString()}원
-            </p>
-          )}
-        </div>
-
-        {/* 설명 */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            메모 <span className="text-gray-400 font-normal">(선택)</span>
-          </label>
-          <input
-            type="text"
-            value={formData.description}
-            onChange={(e) => handleInputChange('description', e.target.value)}
-            placeholder="예: 점심 식사, 택시비"
-            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-          />
-        </div>
-
-        {/* 카테고리 */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            카테고리
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {CATEGORIES.map(cat => (
-              <button
-                key={cat.value}
-                type="button"
-                onClick={() => handleInputChange('category', cat.value)}
-                className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                  formData.category === cat.value
-                    ? 'bg-blue-500 text-white shadow-md'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                }`}
-              >
-                {cat.icon} {cat.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* 참여자 */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              함께한 사람 <span className="text-blue-500">{includedCount}명</span>
-            </label>
-            <button
-              type="button"
-              onClick={handleToggleAll}
-              className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
-            >
-              {participantShares.every(p => p.included) ? '전체 해제' : '전체 선택'}
-            </button>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {participantShares.map(p => (
-              <button
-                key={p.userId}
-                type="button"
-                onClick={() => handleToggleParticipant(p.userId)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                  p.included
-                    ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 ring-1 ring-blue-200 dark:ring-blue-700'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500'
-                }`}
-              >
-                <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                  p.included
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400'
-                }`}>
-                  {p.userName.charAt(0)}
-                </span>
-                <span className={p.included ? '' : 'line-through'}>
-                  {p.userName}
-                </span>
-                {p.isOwner && (
-                  <span className="text-xs bg-gray-900 dark:bg-gray-600 text-white px-1.5 py-0.5 rounded">
-                    방장
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* 버튼 */}
-        <div className="flex gap-3 pt-2">
-          <Button
-            type="button"
-            variant="secondary"
-            fullWidth
-            onClick={onClose}
-            className="dark:bg-gray-700 dark:hover:bg-gray-600"
-          >
-            취소
-          </Button>
-          <Button
-            type="button"
-            fullWidth
-            loading={loading}
-            onClick={handleSubmit}
-            disabled={!formData.totalAmount || includedCount === 0}
-          >
-            등록하기
           </Button>
         </div>
       </div>

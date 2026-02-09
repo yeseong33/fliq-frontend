@@ -5,7 +5,6 @@ import { useAuthStore } from '../store/authStore';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { userAPI } from '../api/user';
-import Header from '../components/common/Header';
 import Button from '../components/common/Button';
 import Modal from '../components/common/Modal';
 import Input from '../components/common/Input';
@@ -63,9 +62,12 @@ const ProfilePage = () => {
 
   return (
     <div className="page">
-      <Header title="내 정보" showBack={true} />
-
       <div className="page-content">
+        {/* 타이틀 */}
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+          마이
+        </h1>
+
         {/* 프로필 카드 */}
         <div className="card mb-4">
           <div className="flex items-center gap-4 mb-6">

@@ -2,14 +2,175 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ========================================
+   모바일 UX 최적화 - 올바른 스크롤 구조
+   ======================================== */
+
+/*
+  핵심: body는 스크롤 안 됨, 콘텐츠 영역만 스크롤
+  - 100dvh: dynamic viewport height (모바일 주소창 대응)
+  - overflow: hidden: body 스크롤 방지
+*/
+html, body {
+  height: 100%;
+  height: 100dvh;
+  height: -webkit-fill-available;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+#root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 스크롤바 숨김 (스크롤은 가능) */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
+
+/* 터치 하이라이트 제거 */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 모달 열렸을 때 콘텐츠 스크롤 방지 */
+body.modal-open .app-content {
+  overflow: hidden !important;
+  touch-action: none;
+}
+
+/* ========================================
+   앱 레이아웃
+   ======================================== */
+
+/* 메인 콘텐츠 영역 - 여기만 스크롤 */
+.app-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 바텀 네비게이션 - sticky로 하단 고정 */
+.bottom-nav {
+  position: sticky;
+  bottom: 0;
+  flex-shrink: 0;
+  background-color: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid #e5e7eb;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.dark .bottom-nav {
+  background-color: rgba(17, 24, 39, 0.98);
+  border-top-color: #1f2937;
+}
+
+/* ========================================
+   페이지 전환 애니메이션
+   - 중력감 있는 부드러운 슬라이드
+   ======================================== */
+
+.page-transition {
+  will-change: transform, opacity;
+}
+
+/* 뒤로가기: 왼쪽에서 안착 */
+.page-enter-from-left {
+  animation: slideFromLeft 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* 앞으로가기: 오른쪽에서 안착 */
+.page-enter-from-right {
+  animation: slideFromRight 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* 애니메이션 완료 */
+.page-enter-done {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+@keyframes slideFromLeft {
+  0% {
+    transform: translateX(-3%);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideFromRight {
+  0% {
+    transform: translateX(3%);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* 아래에서 위로 올라오기 */
+.page-enter-from-bottom {
+  animation: slideFromBottom 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* 위에서 아래로 내려가기 */
+.page-enter-from-top {
+  animation: slideFromTop 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes slideFromBottom {
+  0% {
+    transform: translateY(5%);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideFromTop {
+  0% {
+    transform: translateY(-5%);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* 모션 감소 설정 시 애니메이션 비활성화 */
+@media (prefers-reduced-motion: reduce) {
+  .page-transition {
+    animation: none !important;
+    transform: translateX(0) !important;
+    opacity: 1 !important;
+  }
+}
+
 @layer components {
   /* 페이지 레이아웃 */
   .page {
-    @apply min-h-screen bg-gray-50 dark:bg-gray-900;
+    @apply min-h-full bg-gray-50 dark:bg-gray-900;
   }
 
   .page-content {
-    @apply max-w-md mx-auto space-y-6 pb-20 px-6 py-8;
+    @apply max-w-md mx-auto space-y-6 px-6 py-8;
   }
 
   /* 버튼 그리드 */
