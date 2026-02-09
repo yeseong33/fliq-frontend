@@ -1341,33 +1341,24 @@ const TimeEditModal = ({ isOpen, onClose, startAt, endAt, onSave, loading }) => 
   );
 };
 
-// 지출 테스트 모달 컴포넌트
+// 지출 등록 모달 컴포넌트
 const ExpenseTestModal = ({ isOpen, onClose, gathering, onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     totalAmount: '',
     description: '',
-    location: '',
     category: 'FOOD',
     paidAt: Date.now(),
-    receiptImageUrl: '',
-    shareType: 'EQUAL',
   });
   const [participantShares, setParticipantShares] = useState([]);
 
   const CATEGORIES = [
-    { value: 'FOOD', label: '음식' },
-    { value: 'TRANSPORT', label: '교통' },
-    { value: 'ACCOMMODATION', label: '숙박' },
-    { value: 'ENTERTAINMENT', label: '오락' },
-    { value: 'SHOPPING', label: '쇼핑' },
-    { value: 'OTHER', label: '기타' },
-  ];
-
-  const SHARE_TYPES = [
-    { value: 'EQUAL', label: '균등 분배' },
-    { value: 'CUSTOM', label: '직접 입력' },
-    { value: 'PERCENTAGE', label: '비율 분배' },
+    { value: 'FOOD', label: '식사', icon: '🍽️' },
+    { value: 'TRANSPORT', label: '교통', icon: '🚗' },
+    { value: 'ACCOMMODATION', label: '숙박', icon: '🏨' },
+    { value: 'ENTERTAINMENT', label: '오락', icon: '🎮' },
+    { value: 'SHOPPING', label: '쇼핑', icon: '🛍️' },
+    { value: 'OTHER', label: '기타', icon: '📦' },
   ];
 
   // 모달 열릴 때 참여자 목록 초기화 (방장 포함)
@@ -1389,7 +1380,6 @@ const ExpenseTestModal = ({ isOpen, onClose, gathering, onSuccess }) => {
       if (gathering.participants) {
         gathering.participants.forEach(p => {
           const participantId = p.user?.id || p.id;
-          // 방장이 아닌 경우만 추가
           if (participantId !== gathering.owner?.id) {
             allParticipants.push({
               userId: participantId,
@@ -1401,55 +1391,48 @@ const ExpenseTestModal = ({ isOpen, onClose, gathering, onSuccess }) => {
         });
       }
 
-      // shareValue 설정
-      const totalCount = allParticipants.length;
-      allParticipants.forEach(p => {
-        p.shareValue = formData.shareType === 'PERCENTAGE' ? 100 / totalCount : 0;
-      });
-
       setParticipantShares(allParticipants);
+      // 폼 초기화
+      setFormData({
+        totalAmount: '',
+        description: '',
+        category: 'FOOD',
+        paidAt: Date.now(),
+      });
     }
   }, [isOpen, gathering]);
-
-  // shareType 변경 시 shareValue 재계산
-  useEffect(() => {
-    if (formData.shareType === 'EQUAL') {
-      setParticipantShares(prev => prev.map(p => ({ ...p, shareValue: 0 })));
-    } else if (formData.shareType === 'PERCENTAGE') {
-      const includedCount = participantShares.filter(p => p.included).length;
-      setParticipantShares(prev => prev.map(p => ({
-        ...p,
-        shareValue: p.included ? 100 / includedCount : 0
-      })));
-    }
-  }, [formData.shareType]);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleShareChange = (userId, field, value) => {
+  const handleToggleParticipant = (userId) => {
     setParticipantShares(prev => prev.map(p =>
-      p.userId === userId ? { ...p, [field]: value } : p
+      p.userId === userId ? { ...p, included: !p.included } : p
     ));
   };
 
-  const MAX_AMOUNT = 99999999; // 최대 1억 미만
+  const handleToggleAll = () => {
+    const allIncluded = participantShares.every(p => p.included);
+    setParticipantShares(prev => prev.map(p => ({ ...p, included: !allIncluded })));
+  };
+
+  const MAX_AMOUNT = 99999999;
 
   const handleSubmit = async () => {
     const amount = parseFloat(formData.totalAmount);
     if (!formData.totalAmount || isNaN(amount) || amount <= 0) {
-      toast.error('총 금액을 입력해주세요.');
+      toast.error('금액을 입력해주세요');
       return;
     }
     if (amount > MAX_AMOUNT) {
-      toast.error(`최대 금액은 ${MAX_AMOUNT.toLocaleString()}원입니다.`);
+      toast.error(`최대 금액은 ${MAX_AMOUNT.toLocaleString()}원입니다`);
       return;
     }
 
     const includedParticipants = participantShares.filter(p => p.included);
     if (includedParticipants.length === 0) {
-      toast.error('최소 1명의 참여자를 선택해주세요.');
+      toast.error('최소 1명의 참여자를 선택해주세요');
       return;
     }
 
@@ -1457,177 +1440,164 @@ const ExpenseTestModal = ({ isOpen, onClose, gathering, onSuccess }) => {
     try {
       const requestData = {
         gatheringId: gathering.id,
-        totalAmount: parseFloat(formData.totalAmount),
+        totalAmount: amount,
         description: formData.description || undefined,
-        location: formData.location || undefined,
         category: formData.category,
         paidAt: formData.paidAt,
-        receiptImageUrl: formData.receiptImageUrl || undefined,
-        shareType: formData.shareType,
+        shareType: 'EQUAL',
         participants: includedParticipants.map(p => ({
           userId: p.userId,
-          shareValue: formData.shareType === 'EQUAL' ? 0 : parseFloat(p.shareValue) || 0,
+          shareValue: 0,
         })),
       };
 
       await expenseAPI.create(requestData);
-      toast.success('지출이 등록되었습니다!');
+      toast.success('지출이 등록되었습니다');
       onSuccess?.();
       onClose();
     } catch (error) {
       console.error('Expense Error:', error);
-      toast.error(error.response?.data?.message || error.message || '지출 등록 실패');
+      toast.error(error.response?.data?.message || '지출 등록에 실패했습니다');
     } finally {
       setLoading(false);
     }
   };
 
+  const includedCount = participantShares.filter(p => p.included).length;
+  const perPersonAmount = includedCount > 0 && formData.totalAmount
+    ? Math.ceil(parseFloat(formData.totalAmount) / includedCount)
+    : 0;
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="지출 등록 테스트">
-      <div className="space-y-4 max-h-[70vh] overflow-y-auto">
-        {/* 자동 입력 정보 */}
-        <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm">
-          <div className="text-gray-500 dark:text-gray-400 mb-1">모임 ID (자동)</div>
-          <div className="font-mono text-gray-900 dark:text-white">{gathering?.id}</div>
-        </div>
-
-        {/* 금액 */}
-        <Input
-          label="총 금액 *"
-          type="number"
-          value={formData.totalAmount}
-          onChange={(e) => handleInputChange('totalAmount', e.target.value)}
-          placeholder="50000"
-        />
-
-        {/* 설명 */}
-        <Input
-          label="설명"
-          value={formData.description}
-          onChange={(e) => handleInputChange('description', e.target.value)}
-          placeholder="점심 식사"
-        />
-
-        {/* 위치 */}
-        <Input
-          label="위치"
-          value={formData.location}
-          onChange={(e) => handleInputChange('location', e.target.value)}
-          placeholder="강남역 맛집"
-        />
-
-        {/* 카테고리 */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            카테고리 *
-          </label>
-          <select
-            value={formData.category}
-            onChange={(e) => handleInputChange('category', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-          >
-            {CATEGORIES.map(cat => (
-              <option key={cat.value} value={cat.value}>{cat.label}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* 분배 방식 */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            분배 방식 *
-          </label>
-          <select
-            value={formData.shareType}
-            onChange={(e) => handleInputChange('shareType', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-          >
-            {SHARE_TYPES.map(type => (
-              <option key={type.value} value={type.value}>{type.label}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* 결제 시간 */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            결제 시간
-          </label>
-          <input
-            type="datetime-local"
-            value={new Date(formData.paidAt).toISOString().slice(0, 16)}
-            onChange={(e) => handleInputChange('paidAt', new Date(e.target.value).getTime())}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-          />
-        </div>
-
-        {/* 영수증 이미지 URL */}
-        <Input
-          label="영수증 이미지 URL"
-          value={formData.receiptImageUrl}
-          onChange={(e) => handleInputChange('receiptImageUrl', e.target.value)}
-          placeholder="https://..."
-        />
-
-        {/* 참여자 목록 */}
+    <Modal isOpen={isOpen} onClose={onClose} title="지출 등록">
+      <div className="space-y-5">
+        {/* 금액 입력 */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            참여자 * (토글로 포함/제외)
+            금액
           </label>
-          <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-            모임 인원: {participantShares.length}명 (방장 포함)
+          <div className="relative">
+            <input
+              type="number"
+              inputMode="numeric"
+              value={formData.totalAmount}
+              onChange={(e) => handleInputChange('totalAmount', e.target.value)}
+              placeholder="0"
+              className="w-full px-4 py-4 text-2xl font-bold text-right border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            />
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xl font-medium text-gray-400">
+              원
+            </span>
           </div>
-          <div className="space-y-2 max-h-48 overflow-y-auto">
-            {participantShares.length === 0 ? (
-              <div className="text-center py-4 text-gray-500 dark:text-gray-400 text-sm">
-                모임에 참여자가 없습니다
-              </div>
-            ) : (
-              participantShares.map(p => (
-                <div key={p.userId} className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={p.included}
-                      onChange={(e) => handleShareChange(p.userId, 'included', e.target.checked)}
-                      className="sr-only peer"
-                    />
-                    <div className="w-9 h-5 bg-gray-300 dark:bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
-                  </label>
-                  <span className={`flex-1 text-sm ${p.included ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500 line-through'}`}>
-                    {p.userName}
-                    {p.isOwner && (
-                      <span className="ml-1 text-xs bg-black text-white px-1.5 py-0.5 rounded">방장</span>
-                    )}
-                  </span>
-                  <span className="text-xs text-gray-400 dark:text-gray-500 font-mono">#{p.userId}</span>
-                  {formData.shareType !== 'EQUAL' && p.included && (
-                    <input
-                      type="number"
-                      value={p.shareValue}
-                      onChange={(e) => handleShareChange(p.userId, 'shareValue', e.target.value)}
-                      className="w-20 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      placeholder={formData.shareType === 'PERCENTAGE' ? '%' : '금액'}
-                    />
-                  )}
-                </div>
-              ))
-            )}
-          </div>
-          {participantShares.length > 0 && (
-            <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              선택됨: {participantShares.filter(p => p.included).length}명
-            </div>
+          {formData.totalAmount && includedCount > 0 && (
+            <p className="text-sm text-blue-600 dark:text-blue-400 mt-2 text-right">
+              1인당 {perPersonAmount.toLocaleString()}원
+            </p>
           )}
         </div>
 
+        {/* 설명 */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            메모 <span className="text-gray-400 font-normal">(선택)</span>
+          </label>
+          <input
+            type="text"
+            value={formData.description}
+            onChange={(e) => handleInputChange('description', e.target.value)}
+            placeholder="예: 점심 식사, 택시비"
+            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+          />
+        </div>
+
+        {/* 카테고리 */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            카테고리
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {CATEGORIES.map(cat => (
+              <button
+                key={cat.value}
+                type="button"
+                onClick={() => handleInputChange('category', cat.value)}
+                className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                  formData.category === cat.value
+                    ? 'bg-blue-500 text-white shadow-md'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                {cat.icon} {cat.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 참여자 */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              함께한 사람 <span className="text-blue-500">{includedCount}명</span>
+            </label>
+            <button
+              type="button"
+              onClick={handleToggleAll}
+              className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              {participantShares.every(p => p.included) ? '전체 해제' : '전체 선택'}
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {participantShares.map(p => (
+              <button
+                key={p.userId}
+                type="button"
+                onClick={() => handleToggleParticipant(p.userId)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                  p.included
+                    ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 ring-1 ring-blue-200 dark:ring-blue-700'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500'
+                }`}
+              >
+                <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                  p.included
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400'
+                }`}>
+                  {p.userName.charAt(0)}
+                </span>
+                <span className={p.included ? '' : 'line-through'}>
+                  {p.userName}
+                </span>
+                {p.isOwner && (
+                  <span className="text-xs bg-gray-900 dark:bg-gray-600 text-white px-1.5 py-0.5 rounded">
+                    방장
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* 버튼 */}
-        <div className="flex gap-2 pt-2">
-          <Button type="button" variant="secondary" fullWidth onClick={onClose}>
+        <div className="flex gap-3 pt-2">
+          <Button
+            type="button"
+            variant="secondary"
+            fullWidth
+            onClick={onClose}
+            className="dark:bg-gray-700 dark:hover:bg-gray-600"
+          >
             취소
           </Button>
-          <Button type="button" fullWidth loading={loading} onClick={handleSubmit}>
-            지출 등록
+          <Button
+            type="button"
+            fullWidth
+            loading={loading}
+            onClick={handleSubmit}
+            disabled={!formData.totalAmount || includedCount === 0}
+          >
+            등록하기
           </Button>
         </div>
       </div>
