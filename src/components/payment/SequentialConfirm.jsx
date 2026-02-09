@@ -16,23 +16,6 @@ const SequentialConfirm = ({ settlements, onClose, onComplete, onStateChange }) 
   const processedCount = processedIds.size;
   const isCompleted = currentSettlement?.status === 'COMPLETED';
 
-  // body 스크롤 막기 + 터치 스크롤 방지
-  useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    document.body.style.position = 'fixed';
-    document.body.style.width = '100%';
-    document.body.style.top = `-${window.scrollY}px`;
-
-    return () => {
-      const scrollY = document.body.style.top;
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
-      document.body.style.top = '';
-      window.scrollTo(0, parseInt(scrollY || '0') * -1);
-    };
-  }, []);
-
   // 다음 카드로 이동
   const goNext = useCallback(() => {
     setIsAnimating(true);
@@ -55,8 +38,10 @@ const SequentialConfirm = ({ settlements, onClose, onComplete, onStateChange }) 
       const newProcessedIds = new Set([...processedIds, currentSettlement.id]);
       setProcessedIds(newProcessedIds);
 
+      const isLastCard = currentIndex === totalCount - 1;
+
       // 마지막 항목이면 바로 완료 처리
-      if (newProcessedIds.size === totalCount) {
+      if (newProcessedIds.size === totalCount || isLastCard) {
         toast.success('모든 수령 확인 완료!');
         setIsAnimating(true);
         setTimeout(() => {
@@ -74,7 +59,7 @@ const SequentialConfirm = ({ settlements, onClose, onComplete, onStateChange }) 
     } finally {
       setIsProcessing(false);
     }
-  }, [currentSettlement, isProcessing, goNext, processedIds, totalCount, onComplete, onClose]);
+  }, [currentSettlement, isProcessing, goNext, processedIds, totalCount, currentIndex, onComplete, onClose]);
 
   // 송금 받지 못했어요 (reject)
   const handleReject = useCallback(async () => {
@@ -87,9 +72,12 @@ const SequentialConfirm = ({ settlements, onClose, onComplete, onStateChange }) 
       const newProcessedIds = new Set([...processedIds, currentSettlement.id]);
       setProcessedIds(newProcessedIds);
 
+      const isLastCard = currentIndex === totalCount - 1;
+
       // 마지막 항목이면 바로 완료 처리
-      if (newProcessedIds.size === totalCount) {
-        toast.success('모든 처리 완료!');
+      if (newProcessedIds.size === totalCount || isLastCard) {
+        toast.success(isLastCard ? '재요청되었습니다' : '모든 처리 완료!');
+        setIsAnimating(true);
         setTimeout(() => {
           onComplete?.();
           onClose();
@@ -105,7 +93,7 @@ const SequentialConfirm = ({ settlements, onClose, onComplete, onStateChange }) 
     } finally {
       setIsProcessing(false);
     }
-  }, [currentSettlement, isProcessing, goNext, processedIds, totalCount, onComplete, onClose]);
+  }, [currentSettlement, isProcessing, goNext, processedIds, totalCount, currentIndex, onComplete, onClose]);
 
   // 건너뛰기
   const handleSkip = useCallback(() => {
@@ -152,10 +140,7 @@ const SequentialConfirm = ({ settlements, onClose, onComplete, onStateChange }) 
   // 대상이 없는 경우
   if (totalCount === 0) {
     return (
-      <div
-        className="fixed inset-0 z-[60] bg-white dark:bg-gray-900 flex flex-col overflow-hidden"
-        style={{ height: '100dvh' }}
-      >
+      <div className="fixed inset-0 z-[60] bg-white dark:bg-gray-900 flex flex-col overflow-hidden min-h-screen">
         <div className="flex-1 flex flex-col items-center justify-center px-8">
           <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4">
             <Check className="text-green-500" size={32} />
@@ -179,7 +164,7 @@ const SequentialConfirm = ({ settlements, onClose, onComplete, onStateChange }) 
   }
 
   return (
-    <div className="fixed inset-0 z-[60] bg-white dark:bg-gray-900 flex flex-col overflow-hidden" style={{ height: '100dvh', touchAction: 'none' }}>
+    <div className="fixed inset-0 z-[60] bg-white dark:bg-gray-900 flex flex-col overflow-hidden min-h-screen">
       {/* 프로그래스 바 */}
       <div className="shrink-0 px-5 pt-4" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)' }}>
         <div className="flex gap-1.5">

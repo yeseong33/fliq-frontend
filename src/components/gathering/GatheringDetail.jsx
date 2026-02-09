@@ -36,7 +36,7 @@ const CelebrationOverlay = ({ show, type = 'send', onComplete }) => {
   const isReceive = type === 'receive';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center celebration-overlay">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center celebration-overlay" style={{ paddingBottom: 'calc(60px + env(safe-area-inset-bottom))' }}>
       {/* 배경 블러 */}
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm celebration-fade-in" />
 
@@ -89,7 +89,7 @@ const CelebrationOverlay = ({ show, type = 'send', onComplete }) => {
                 ? ['#10B981', '#34D399', '#6EE7B7', '#059669', '#047857'][i % 5]
                 : ['#3B82F6', '#8B5CF6', '#EC4899', '#10B981', '#F59E0B'][i % 5],
               borderRadius: Math.random() > 0.5 ? '50%' : '2px',
-              animationDelay: `${Math.random() * 0.5}s`,
+              animationDelay: `${Math.random() * 0.1}s`,
             }}
           />
         ))}
@@ -131,7 +131,8 @@ const CelebrationOverlay = ({ show, type = 'send', onComplete }) => {
         }
         @keyframes particle {
           0% { opacity: 0; transform: scale(0) translateY(0); }
-          20% { opacity: 1; transform: scale(1) translateY(0); }
+          10% { opacity: 1; transform: scale(1.2) translateY(0); }
+          30% { opacity: 1; transform: scale(1) translateY(-20px); }
           100% { opacity: 0; transform: scale(0.5) translateY(-100px); }
         }
       `}</style>

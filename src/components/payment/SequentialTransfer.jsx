@@ -17,22 +17,6 @@ const SequentialTransfer = ({ settlements, onClose, onComplete, onStateChange })
   const completedCount = completedIds.size;
   const hasOpenedToss = currentSettlement && openedTossIds.has(currentSettlement.id);
 
-  // body 스크롤 막기 + 터치 스크롤 방지
-  useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    document.body.style.position = 'fixed';
-    document.body.style.width = '100%';
-    document.body.style.top = `-${window.scrollY}px`;
-
-    return () => {
-      const scrollY = document.body.style.top;
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
-      document.body.style.top = '';
-      window.scrollTo(0, parseInt(scrollY || '0') * -1);
-    };
-  }, []);
 
   // 토스로 송금하기
   const handleTransfer = useCallback(() => {
@@ -56,8 +40,10 @@ const SequentialTransfer = ({ settlements, onClose, onComplete, onStateChange })
       const newCompletedIds = new Set([...completedIds, currentSettlement.id]);
       setCompletedIds(newCompletedIds);
 
+      const isLastCard = currentIndex === totalCount - 1;
+
       // 마지막 항목이면 바로 완료 처리
-      if (newCompletedIds.size === totalCount) {
+      if (newCompletedIds.size === totalCount || isLastCard) {
         toast.success('모든 송금 완료!');
         setIsAnimating(true);
         setTimeout(() => {
@@ -81,7 +67,7 @@ const SequentialTransfer = ({ settlements, onClose, onComplete, onStateChange })
     } finally {
       setIsProcessing(false);
     }
-  }, [currentSettlement, isProcessing, totalCount, completedIds, onComplete, onClose]);
+  }, [currentSettlement, isProcessing, totalCount, currentIndex, completedIds, onComplete, onClose]);
 
   // 건너뛰기
   const handleSkip = useCallback(() => {
@@ -133,10 +119,7 @@ const SequentialTransfer = ({ settlements, onClose, onComplete, onStateChange })
   // 보낼 정산이 없는 경우
   if (totalCount === 0) {
     return (
-      <div
-        className="fixed inset-0 z-[60] bg-white dark:bg-gray-900 flex flex-col overflow-hidden"
-        style={{ height: '100dvh' }}
-      >
+      <div className="fixed inset-0 z-[60] bg-white dark:bg-gray-900 flex flex-col overflow-hidden" style={{ height: '100dvh' }}>
         <div className="flex-1 flex flex-col items-center justify-center px-8">
           <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4">
             <Check className="text-green-500" size={32} />
@@ -160,7 +143,7 @@ const SequentialTransfer = ({ settlements, onClose, onComplete, onStateChange })
   }
 
   return (
-    <div className="fixed inset-0 z-[60] bg-white dark:bg-gray-900 flex flex-col overflow-hidden" style={{ height: '100dvh', touchAction: 'none' }}>
+    <div className="fixed inset-0 z-[60] bg-white dark:bg-gray-900 flex flex-col overflow-hidden" style={{ height: '100dvh' }}>
       {/* 프로그래스 바 */}
       <div className="shrink-0 px-5 pt-4" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)' }}>
         <div className="flex gap-1.5">
