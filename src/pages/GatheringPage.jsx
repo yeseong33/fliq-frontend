@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CreditCard } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -7,14 +7,12 @@ import { useAuth } from '../hooks/useAuth';
 import { GATHERING_STATUS } from '../utils/constants';
 import Button from '../components/common/Button';
 import GatheringDetail from '../components/gathering/GatheringDetail';
-import PaymentHistory from '../components/payment/PaymentHistory';
 
 const GatheringPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { currentGathering, getGathering, loading, clearCurrentGathering } = useGathering();
-  const [activeTab, setActiveTab] = useState('details');
 
   useEffect(() => {
     // id가 유효한 값인지 확인 (undefined 문자열이나 빈 값 제외)
@@ -52,7 +50,6 @@ const GatheringPage = () => {
 
   const isOwner = currentGathering?.owner?.email === user?.email;
   const canPay = currentGathering?.status === GATHERING_STATUS.PAYMENT_REQUESTED;
-  const hasPaymentRequest = currentGathering?.totalAmount != null;
 
   if (loading && !currentGathering) {
     return null;
@@ -80,41 +77,10 @@ const GatheringPage = () => {
   return (
     <div className="page">
       <div className="page-content">
-        {/* 탭 네비게이션 */}
-        <div className="flex gap-2 mb-6 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
-            <button
-              onClick={() => setActiveTab('details')}
-              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${
-                activeTab === 'details'
-                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-              }`}
-            >
-              모임 정보
-            </button>
-            <button
-              onClick={() => setActiveTab('payments')}
-              className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${
-                activeTab === 'payments'
-                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-              }`}
-            >
-              결제 현황
-            </button>
-          </div>
-
-        {/* 탭 콘텐츠 */}
-        {activeTab === 'details' && (
-          <GatheringDetail
-            gathering={currentGathering}
-            onUpdate={handleGatheringUpdate}
-          />
-        )}
-        
-        {activeTab === 'payments' && (
-          <PaymentHistory gatheringId={currentGathering.id} />
-        )}
+        <GatheringDetail
+          gathering={currentGathering}
+          onUpdate={handleGatheringUpdate}
+        />
 
         {/* 결제하기 버튼 (참여자용) */}
         {!isOwner && canPay && (

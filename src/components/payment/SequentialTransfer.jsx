@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Send, Check, ChevronLeft } from 'lucide-react';
+import { Send, Check } from 'lucide-react';
 import { getBankName } from '../../utils/tossDeeplink';
 import { settlementAPI } from '../../api';
 import toast from 'react-hot-toast';
@@ -53,14 +53,25 @@ const SequentialTransfer = ({ settlements, onClose, onComplete, onStateChange })
     try {
       await settlementAPI.complete(currentSettlement.id);
 
-      setIsAnimating(true);
-      setCompletedIds(prev => new Set([...prev, currentSettlement.id]));
+      const newCompletedIds = new Set([...completedIds, currentSettlement.id]);
+      setCompletedIds(newCompletedIds);
 
+      // 마지막 항목이면 바로 완료 처리
+      if (newCompletedIds.size === totalCount) {
+        toast.success('모든 송금 완료!');
+        setIsAnimating(true);
+        setTimeout(() => {
+          onComplete?.();
+          onClose();
+        }, 500);
+        return;
+      }
+
+      // 다음 항목으로 이동
+      setIsAnimating(true);
       setTimeout(() => {
         setIsAnimating(false);
-        if (currentIndex < totalCount - 1) {
-          setCurrentIndex(prev => prev + 1);
-        }
+        setCurrentIndex(prev => prev + 1);
       }, 500);
 
       toast.success('송금 완료!');
@@ -70,7 +81,7 @@ const SequentialTransfer = ({ settlements, onClose, onComplete, onStateChange })
     } finally {
       setIsProcessing(false);
     }
-  }, [currentSettlement, isProcessing, currentIndex, totalCount]);
+  }, [currentSettlement, isProcessing, totalCount, completedIds, onComplete, onClose]);
 
   // 건너뛰기
   const handleSkip = useCallback(() => {
@@ -88,6 +99,11 @@ const SequentialTransfer = ({ settlements, onClose, onComplete, onStateChange })
     }
   }, [currentIndex, totalCount, currentSettlement?.id]);
 
+  // 닫기 핸들러
+  const handleClose = useCallback(() => {
+    onClose();
+  }, [onClose]);
+
   // 상태를 부모에게 전달
   useEffect(() => {
     if (onStateChange && currentSettlement) {
@@ -99,9 +115,10 @@ const SequentialTransfer = ({ settlements, onClose, onComplete, onStateChange })
         handleTransfer,
         handleMarkComplete,
         handleSkip,
+        handleClose,
       });
     }
-  }, [currentSettlement, hasOpenedToss, isProcessing, currentIndex, totalCount, handleTransfer, handleMarkComplete, handleSkip, onStateChange]);
+  }, [currentSettlement, hasOpenedToss, isProcessing, currentIndex, totalCount, handleTransfer, handleMarkComplete, handleSkip, handleClose, onStateChange]);
 
   // 모든 송금 완료 시 바로 닫기
   useEffect(() => {
@@ -117,17 +134,9 @@ const SequentialTransfer = ({ settlements, onClose, onComplete, onStateChange })
   if (totalCount === 0) {
     return (
       <div
-        className="fixed inset-0 z-40 bg-white dark:bg-gray-900 flex flex-col overflow-hidden"
-        style={{ height: '100dvh', touchAction: 'none' }}
+        className="fixed inset-0 z-[60] bg-white dark:bg-gray-900 flex flex-col overflow-hidden"
+        style={{ height: '100dvh' }}
       >
-        <div className="flex items-center justify-between px-4 pt-[env(safe-area-inset-top)] h-14 flex-shrink-0">
-          <button onClick={onClose} className="w-10 h-10 flex items-center justify-center -ml-2">
-            <ChevronLeft className="text-gray-600 dark:text-gray-400" size={24} />
-          </button>
-          <div className="text-gray-900 dark:text-white font-medium">송금</div>
-          <div className="w-10" />
-        </div>
-
         <div className="flex-1 flex flex-col items-center justify-center px-8">
           <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4">
             <Check className="text-green-500" size={32} />
@@ -135,104 +144,94 @@ const SequentialTransfer = ({ settlements, onClose, onComplete, onStateChange })
           <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
             보낼 정산이 없습니다
           </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
+          <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-6">
             모든 정산이 완료되었거나<br />대기 중인 송금이 없습니다.
           </p>
+          <button
+            onClick={handleClose}
+            className="px-6 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl font-medium"
+            type="button"
+          >
+            닫기
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div
-      className="fixed inset-0 z-40 bg-white dark:bg-gray-900 flex flex-col overflow-hidden"
-      style={{ height: '100dvh', touchAction: 'none' }}
-    >
-      {/* 헤더 */}
-      <div className="flex items-center justify-between px-4 pt-[env(safe-area-inset-top)] h-14 flex-shrink-0">
-        <button onClick={onClose} className="w-10 h-10 flex items-center justify-center -ml-2">
-          <ChevronLeft className="text-gray-600 dark:text-gray-400" size={24} />
-        </button>
-        <div className="text-gray-900 dark:text-white font-medium">
-          송금 {currentIndex + 1}/{totalCount}
-        </div>
-        <div className="w-10" />
-      </div>
-
-      {/* 진행 바 */}
-      <div className="px-4 pb-3 flex-shrink-0">
-        <div className="w-full h-1 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-blue-500 rounded-full transition-all duration-500 ease-out"
-            style={{ width: `${((currentIndex + 1) / totalCount) * 100}%` }}
-          />
+    <div className="fixed inset-0 z-[60] bg-white dark:bg-gray-900 flex flex-col overflow-hidden" style={{ height: '100dvh', touchAction: 'none' }}>
+      {/* 프로그래스 바 */}
+      <div className="shrink-0 px-5 pt-4" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)' }}>
+        <div className="flex gap-1.5">
+          {Array.from({ length: totalCount }, (_, i) => (
+            <div
+              key={i}
+              className={`h-1 flex-1 rounded-full transition-all duration-300 ${
+                i <= currentIndex ? 'bg-blue-500' : 'bg-gray-200 dark:bg-gray-700'
+              }`}
+            />
+          ))}
         </div>
       </div>
 
-      {/* 메인 콘텐츠 - 카드만 표시 */}
-      <div className="px-4 flex-shrink-0">
-        <div className="max-w-sm mx-auto">
+      {/* 카드 영역 */}
+      <div className="flex-1 flex items-center justify-center px-5 min-h-0">
+        <div className="w-full max-w-sm">
           <div
-            className={`bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden transition-all duration-500 ${
+            className={`bg-white dark:bg-gray-800 rounded-2xl shadow-lg transition-all duration-500 ${
               isAnimating ? 'animate-card-fly-up' : ''
             }`}
           >
-            {/* 카드 상단 그라데이션 */}
-            <div className="h-28 bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 relative overflow-hidden">
-              <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full" />
-              <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-white/10 rounded-full" />
+            <div className="h-20 bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 relative rounded-t-2xl overflow-hidden">
+              <div className="absolute -top-8 -right-8 w-24 h-24 bg-white/10 rounded-full" />
+              <div className="absolute -bottom-6 -left-6 w-20 h-20 bg-white/10 rounded-full" />
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                  <Send className="text-white" size={28} />
+                <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                  <Send className="text-white" size={18} />
                 </div>
               </div>
             </div>
-
-            {/* 카드 내용 */}
-            <div className="p-5">
-              {/* 수신자 정보 */}
-              <div className="text-center mb-5">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-full mb-2">
-                  <span className="text-lg font-bold text-gray-600 dark:text-gray-300">
+            <div className="p-4">
+              <div className="text-center mb-3">
+                <div className="inline-flex items-center justify-center w-9 h-9 bg-gray-100 dark:bg-gray-700 rounded-full mb-1">
+                  <span className="text-sm font-bold text-gray-600 dark:text-gray-300">
                     {currentSettlement?.toUser?.name?.charAt(0) || '?'}
                   </span>
                 </div>
-                <div className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                <div className="text-base font-bold text-gray-900 dark:text-white">
                   {currentSettlement?.toUser?.name || '알 수 없음'}
                 </div>
                 {currentSettlement?.toUserPaymentMethod ? (
-                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
                     {getBankName(currentSettlement.toUserPaymentMethod.bankCode)}{' '}
                     {currentSettlement.toUserPaymentMethod.accountNumber}
                   </div>
                 ) : (
-                  <div className="text-sm text-red-500">계좌 정보 없음</div>
+                  <div className="text-xs text-red-500">계좌 정보 없음</div>
                 )}
               </div>
-
-              {/* 금액 */}
-              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl p-4">
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-3">
                 <div className="text-center">
-                  <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">송금 금액</div>
-                  <div className="text-3xl font-bold text-gray-900 dark:text-white">
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">송금 금액</div>
+                  <div className="text-xl font-bold text-gray-900 dark:text-white">
                     {currentSettlement?.amount?.toLocaleString()}
-                    <span className="text-lg font-normal text-gray-400 ml-1">원</span>
+                    <span className="text-sm font-normal text-gray-400 ml-1">원</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-
-          {/* 남은 카드 표시 */}
           {totalCount - currentIndex > 1 && (
-            <div className="text-center mt-3 text-sm text-gray-400 dark:text-gray-500">
+            <div className="text-center mt-2 text-xs text-gray-400 dark:text-gray-500">
               {totalCount - currentIndex - 1}건 더 있어요
             </div>
           )}
         </div>
       </div>
 
-      {/* 하단 버튼은 SettlementBottomBar에서 렌더링 */}
+      {/* 하단 버튼 영역 여백 */}
+      <div className="shrink-0" style={{ height: 'calc(130px + env(safe-area-inset-bottom))' }} />
     </div>
   );
 };

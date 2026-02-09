@@ -153,7 +153,7 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
   const [settlements, setSettlements] = useState([]);
   const [settlementsLoading, setSettlementsLoading] = useState(false);
   const [calculatingSettlement, setCalculatingSettlement] = useState(false);
-  const [activeTab, setActiveTab] = useState('expense'); // 'expense' | 'participants' | 'settings'
+  const [activeTab, setActiveTab] = useState('expense'); // 'expense' | 'members' | 'settlement' | 'settings'
   const [celebrationType, setCelebrationType] = useState(null); // null | 'send' | 'receive'
   const [showSequentialTransfer, setShowSequentialTransfer] = useState(false);
   const [myPendingSettlements, setMyPendingSettlements] = useState([]);
@@ -428,74 +428,81 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
         />
       )}
 
-      {/* 상단 헤더 */}
-      <div className="px-5 py-4 bg-white dark:bg-gray-800/50 rounded-2xl shadow-[0_2px_8px_0_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_0_rgba(0,0,0,0.2)]">
-        <div className="flex items-center justify-between">
-          <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white truncate">{gathering.title}</h1>
-            <div className="flex items-center gap-2 mt-1 text-sm text-gray-500 dark:text-gray-400">
-              {formatDateCompact(gathering.startAt) && (
-                <span>
-                  {formatDateCompact(gathering.startAt)}
-                  {gathering.endAt && ` - ${formatDateCompact(gathering.endAt)}`}
-                </span>
-              )}
-              <span>·</span>
-              <span className="flex items-center gap-1">
-                <Users size={14} />
-                {participantCount}명
-              </span>
-            </div>
-          </div>
-          {isOwner && (
-            <button
-              onClick={() => {
-                setUp();
-                navigate(`/gathering/${gathering.id}/qr`);
-              }}
-              className="p-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-            >
-              <QrCode size={20} />
-            </button>
-          )}
-        </div>
+      {/* 상단 헤더 - 간소화 */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white truncate">{gathering.title}</h1>
+        {isOwner && (
+          <button
+            onClick={() => {
+              setUp();
+              navigate(`/gathering/${gathering.id}/qr`);
+            }}
+            className="p-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+          >
+            <QrCode size={20} />
+          </button>
+        )}
       </div>
 
 
-      {/* 탭 네비게이션 */}
+      {/* 정산 카드 */}
+      <SettlementCard
+        settlements={settlements}
+        user={user}
+        onTransfer={(pendingList) => {
+          setMyPendingSettlements(pendingList);
+          setShowSequentialTransfer(true);
+        }}
+        onConfirm={(receiveList) => {
+          setMyReceiveSettlements(receiveList);
+          setShowSequentialConfirm(true);
+        }}
+      />
+
       {/* 탭 네비게이션 */}
       <div className="flex bg-gray-100 dark:bg-gray-800/50 rounded-2xl p-1.5 shadow-[0_2px_8px_0_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_0_rgba(0,0,0,0.2)]">
         <button
           onClick={() => setActiveTab('expense')}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium rounded-xl transition-all ${
+          className={`flex-1 flex items-center justify-center gap-1 py-2.5 text-sm font-medium rounded-xl transition-all ${
             activeTab === 'expense'
               ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-[0_2px_8px_0_rgba(0,0,0,0.08)]'
               : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
           }`}
         >
-          <Receipt size={16} />
+          <Receipt size={14} />
           지출
         </button>
         <button
-          onClick={() => setActiveTab('participants')}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium rounded-xl transition-all ${
-            activeTab === 'participants'
+          onClick={() => setActiveTab('members')}
+          className={`flex-1 flex items-center justify-center gap-1 py-2.5 text-sm font-medium rounded-xl transition-all ${
+            activeTab === 'members'
               ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-[0_2px_8px_0_rgba(0,0,0,0.08)]'
               : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
           }`}
         >
-          <Users size={16} />
-          참여자
+          <Users size={14} />
+          멤버
+        </button>
+        <button
+          onClick={() => setActiveTab('settlement')}
+          className={`flex-1 flex items-center justify-center gap-1 py-2.5 text-sm font-medium rounded-xl transition-all ${
+            activeTab === 'settlement'
+              ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-[0_2px_8px_0_rgba(0,0,0,0.08)]'
+              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+          }`}
+        >
+          <Calculator size={14} />
+          정산
         </button>
         <button
           onClick={() => setActiveTab('settings')}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium rounded-xl transition-all ${
+          className={`flex-1 flex items-center justify-center gap-1 py-2.5 text-sm font-medium rounded-xl transition-all ${
             activeTab === 'settings'
               ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-[0_2px_8px_0_rgba(0,0,0,0.08)]'
               : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
           }`}
         >
-          <Settings size={16} />
+          <Settings size={14} />
           설정
         </button>
       </div>
@@ -582,9 +589,9 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
         </div>
       )}
 
-      {activeTab === 'participants' && (
+      {activeTab === 'members' && (
         <div className="px-5 py-4 bg-white dark:bg-gray-800/50 rounded-2xl shadow-[0_2px_8px_0_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_0_rgba(0,0,0,0.2)]">
-          <h3 className="font-semibold mb-4 text-gray-900 dark:text-white">참여자 목록</h3>
+          <h3 className="font-semibold mb-4 text-gray-900 dark:text-white">멤버 목록</h3>
 
           {gathering.participants && gathering.participants.length > 0 ? (
             <div className="space-y-2">
@@ -613,8 +620,59 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
           ) : (
             <div className="text-center py-8 text-gray-500 dark:text-gray-400">
               <Users size={32} className="mx-auto mb-2 opacity-50" />
-              <p>아직 참여자가 없습니다</p>
+              <p>아직 멤버가 없습니다</p>
             </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'settlement' && (
+        <div className="space-y-4">
+          {/* 정산 현황 */}
+          <div className="px-5 py-4 bg-white dark:bg-gray-800/50 rounded-2xl shadow-[0_2px_8px_0_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_0_rgba(0,0,0,0.2)]">
+            <h3 className="font-semibold mb-4 text-gray-900 dark:text-white">정산 현황</h3>
+
+            {settlementsLoading ? (
+              <div className="flex justify-center py-4 text-gray-400 dark:text-gray-500">
+                <span className="loading-dots">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </span>
+              </div>
+            ) : settlements.length > 0 ? (
+              <div className="space-y-2">
+                {settlements.map((settlement) => (
+                  <SettlementItem
+                    key={settlement.id}
+                    settlement={settlement}
+                    currentUser={user}
+                    onComplete={handleCompleteSettlement}
+                    onConfirm={handleConfirmSettlement}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <Calculator size={32} className="mx-auto mb-2 opacity-50" />
+                <p>정산 내역이 없습니다</p>
+                <p className="text-sm mt-1">지출 탭에서 정산을 계산해주세요</p>
+              </div>
+            )}
+          </div>
+
+          {/* 정산 계산 버튼 (방장 + 지출 존재 시) */}
+          {isOwner && expenses.length > 0 && (
+            <Button
+              fullWidth
+              variant="secondary"
+              onClick={handleCalculateSettlement}
+              loading={calculatingSettlement}
+              className="flex items-center justify-center gap-2"
+            >
+              <Calculator size={18} />
+              정산 다시 계산
+            </Button>
           )}
         </div>
       )}
@@ -766,6 +824,137 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
   );
 };
 
+// 상단 정산 카드 컴포넌트
+const SettlementCard = ({ settlements, user, onTransfer, onConfirm }) => {
+  const toSend = settlements.filter(
+    (s) => s.fromUser?.id === user?.id || s.fromUser?.email === user?.email
+  );
+  const toReceive = settlements.filter(
+    (s) => s.toUser?.id === user?.id || s.toUser?.email === user?.email
+  );
+
+  // 내가 보내야 할 금액 (PENDING 상태만)
+  const pendingToSend = toSend.filter(s => s.status === 'PENDING');
+  const totalToSend = pendingToSend.reduce((sum, s) => sum + (s.amount || 0), 0);
+  const sendCount = pendingToSend.length;
+
+  // 내가 받아야 할 금액 (PENDING + COMPLETED 상태)
+  const pendingToReceive = toReceive.filter(s => s.status === 'PENDING' || s.status === 'COMPLETED');
+  const totalToReceive = pendingToReceive.reduce((sum, s) => sum + (s.amount || 0), 0);
+  const receiveCount = pendingToReceive.length;
+
+  // 상태 판단
+  const noSettlements = settlements.length === 0;
+  const noMySettlements = !noSettlements && toSend.length === 0 && toReceive.length === 0;
+  const allCompleted = !noSettlements && !noMySettlements &&
+    toSend.every(s => s.status === 'CONFIRMED') &&
+    toReceive.every(s => s.status === 'CONFIRMED');
+
+  const handleTransfer = () => {
+    if (pendingToSend.length > 0) {
+      onTransfer(pendingToSend);
+    }
+  };
+
+  const handleConfirm = () => {
+    if (pendingToReceive.length > 0) {
+      onConfirm(pendingToReceive);
+    }
+  };
+
+  // 1. 송금할 게 있으면 송금 카드 (최우선)
+  if (totalToSend > 0) {
+    const firstRecipient = pendingToSend[0]?.toUser?.name || '알 수 없음';
+    return (
+      <button
+        onClick={handleTransfer}
+        className="w-full px-5 py-4 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-[0.98] transition-transform"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+              <Send className="text-white" size={20} />
+            </div>
+            <div className="text-left">
+              <p className="text-white/80 text-sm">
+                {firstRecipient}{sendCount > 1 ? ` 외 ${sendCount - 1}명` : ''}에게
+              </p>
+              <p className="text-white text-lg font-bold">
+                {totalToSend.toLocaleString()}원 보내기
+              </p>
+            </div>
+          </div>
+          <ChevronRight className="text-white/60" size={24} />
+        </div>
+      </button>
+    );
+  }
+
+  // 2. 받을 게 있으면 수령 확인 카드
+  if (totalToReceive > 0) {
+    const firstSender = pendingToReceive[0]?.fromUser?.name || '알 수 없음';
+    return (
+      <button
+        onClick={handleConfirm}
+        className="w-full px-5 py-4 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl shadow-lg shadow-green-500/20 active:scale-[0.98] transition-transform"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+              <Check className="text-white" size={20} />
+            </div>
+            <div className="text-left">
+              <p className="text-white/80 text-sm">
+                {firstSender}{receiveCount > 1 ? ` 외 ${receiveCount - 1}명` : ''}에게서
+              </p>
+              <p className="text-white text-lg font-bold">
+                +{totalToReceive.toLocaleString()}원 확인하기
+              </p>
+            </div>
+          </div>
+          <ChevronRight className="text-white/60" size={24} />
+        </div>
+      </button>
+    );
+  }
+
+  // 3. 모두 완료
+  if (allCompleted) {
+    return (
+      <div className="w-full px-5 py-4 bg-gray-100 dark:bg-gray-800/50 rounded-2xl">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+            <Check className="text-gray-400 dark:text-gray-500" size={20} />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">정산 완료</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500">모든 정산이 완료되었습니다</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 4. 정산 없거나 내 정산 없음 - 회색 버튼
+  return (
+    <div className="w-full px-5 py-4 bg-gray-100 dark:bg-gray-800/50 rounded-2xl">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+          <Clock className="text-gray-400 dark:text-gray-500" size={20} />
+        </div>
+        <div>
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            {noSettlements ? '정산 대기중' : '정산 내역 없음'}
+          </p>
+          <p className="text-xs text-gray-400 dark:text-gray-500">
+            {noSettlements ? '지출 등록 후 정산을 계산해주세요' : '나와 관련된 정산이 없습니다'}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // 하단 고정 정산 바 컴포넌트 (Portal 사용)
 const SettlementBottomBar = ({ settlements, user, onTransfer, onConfirm, transferState, confirmState, isTransferOpen, isConfirmOpen }) => {
   const toSend = settlements.filter(
@@ -807,7 +996,7 @@ const SettlementBottomBar = ({ settlements, user, onTransfer, onConfirm, transfe
   // 송금 페이지가 열려있을 때 버튼 렌더링
   const renderTransferButtons = () => {
     if (!transferState) return null;
-    const { currentSettlement, hasOpenedToss, isProcessing, canSkip, handleTransfer: doTransfer, handleMarkComplete, handleSkip } = transferState;
+    const { currentSettlement, hasOpenedToss, isProcessing, canSkip, handleTransfer: doTransfer, handleMarkComplete, handleSkip, handleClose } = transferState;
 
     return (
       <div className="space-y-2">
@@ -836,15 +1025,19 @@ const SettlementBottomBar = ({ settlements, user, onTransfer, onConfirm, transfe
             <span>{currentSettlement?.amount?.toLocaleString()}원 송금</span>
           </button>
         )}
-        {canSkip && (
-          <button
-            onClick={handleSkip}
-            className="w-full py-2 text-gray-500 dark:text-gray-400 text-sm font-medium flex items-center justify-center gap-1"
-          >
-            다음에 할게요
-            <ChevronRight size={14} />
-          </button>
-        )}
+        <button
+          onClick={canSkip ? handleSkip : handleClose}
+          className="w-full py-2 text-gray-500 dark:text-gray-400 text-sm font-medium flex items-center justify-center gap-1"
+        >
+          {canSkip ? (
+            <>
+              다음에 할게요
+              <ChevronRight size={14} />
+            </>
+          ) : (
+            '닫기'
+          )}
+        </button>
       </div>
     );
   };
@@ -852,7 +1045,7 @@ const SettlementBottomBar = ({ settlements, user, onTransfer, onConfirm, transfe
   // 수령 확인 페이지가 열려있을 때 버튼 렌더링
   const renderConfirmButtons = () => {
     if (!confirmState) return null;
-    const { currentSettlement, isCompleted, isProcessing, canSkip, handleConfirm: doConfirm, handleReject, handleSkip } = confirmState;
+    const { currentSettlement, isCompleted, isProcessing, canSkip, handleConfirm: doConfirm, handleReject, handleSkip, handleClose } = confirmState;
 
     return (
       <div className="space-y-2">
@@ -888,7 +1081,7 @@ const SettlementBottomBar = ({ settlements, user, onTransfer, onConfirm, transfe
               <span>송금 대기 중</span>
             </div>
             <button
-              onClick={handleSkip}
+              onClick={canSkip ? handleSkip : handleClose}
               className="w-full py-2 text-gray-500 dark:text-gray-400 text-sm font-medium flex items-center justify-center gap-1"
             >
               {canSkip ? (
@@ -950,7 +1143,7 @@ const SettlementBottomBar = ({ settlements, user, onTransfer, onConfirm, transfe
     );
   };
 
-  // 송금/확인 페이지가 열려있으면 해당 버튼만, 아니면 기본 버튼
+  // 송금/확인 페이지가 열려있을 때만 버튼 표시 (기본 상태는 상단 카드 사용)
   const renderContent = () => {
     if (isTransferOpen) {
       return transferState ? renderTransferButtons() : null;
@@ -958,18 +1151,25 @@ const SettlementBottomBar = ({ settlements, user, onTransfer, onConfirm, transfe
     if (isConfirmOpen) {
       return confirmState ? renderConfirmButtons() : null;
     }
-    return renderDefaultButtons();
+    // 기본 상태에서는 상단 SettlementCard를 사용하므로 여기서는 null
+    return null;
   };
 
-  const content = (
+  const content = renderContent();
+
+  // content가 없으면 Portal도 렌더링하지 않음
+  if (!content) {
+    return null;
+  }
+
+  return createPortal(
     <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] left-0 right-0 px-4 z-50">
       <div className="max-w-md mx-auto">
-        {renderContent()}
+        {content}
       </div>
-    </div>
+    </div>,
+    document.body
   );
-
-  return createPortal(content, document.body);
 };
 
 // 지출 상세 모달 컴포넌트
