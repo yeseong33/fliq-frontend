@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Send, Check } from 'lucide-react';
+import { Send, Check, ChevronRight } from 'lucide-react';
 import { getBankName } from '../../utils/tossDeeplink';
 import { settlementAPI } from '../../api';
 import toast from 'react-hot-toast';
 
-const SequentialTransfer = ({ settlements, onClose, onComplete, onStateChange }) => {
+const SequentialTransfer = ({ settlements, onClose, onComplete }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [completedIds, setCompletedIds] = useState(new Set());
   const [openedTossIds, setOpenedTossIds] = useState(new Set());
@@ -16,7 +16,7 @@ const SequentialTransfer = ({ settlements, onClose, onComplete, onStateChange })
   const currentSettlement = pendingSettlements[currentIndex];
   const completedCount = completedIds.size;
   const hasOpenedToss = currentSettlement && openedTossIds.has(currentSettlement.id);
-
+  const canSkip = currentIndex < totalCount - 1;
 
   // 토스로 송금하기
   const handleTransfer = useCallback(() => {
@@ -90,21 +90,11 @@ const SequentialTransfer = ({ settlements, onClose, onComplete, onStateChange })
     onClose();
   }, [onClose]);
 
-  // 상태를 부모에게 전달
+  // 배경 스크롤 방지
   useEffect(() => {
-    if (onStateChange && currentSettlement) {
-      onStateChange({
-        currentSettlement,
-        hasOpenedToss,
-        isProcessing,
-        canSkip: currentIndex < totalCount - 1,
-        handleTransfer,
-        handleMarkComplete,
-        handleSkip,
-        handleClose,
-      });
-    }
-  }, [currentSettlement, hasOpenedToss, isProcessing, currentIndex, totalCount, handleTransfer, handleMarkComplete, handleSkip, handleClose, onStateChange]);
+    document.body.classList.add('modal-open');
+    return () => document.body.classList.remove('modal-open');
+  }, []);
 
   // 모든 송금 완료 시 바로 닫기
   useEffect(() => {
@@ -143,7 +133,8 @@ const SequentialTransfer = ({ settlements, onClose, onComplete, onStateChange })
   }
 
   return (
-    <div className="fixed inset-0 z-[60] bg-white dark:bg-gray-900 flex flex-col overflow-hidden" style={{ height: '100dvh' }}>
+    <>
+    <div className="fixed inset-0 z-[60] bg-white dark:bg-gray-900 flex flex-col overflow-hidden">
       {/* 프로그래스 바 */}
       <div className="shrink-0 px-5 pt-4" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)' }}>
         <div className="flex gap-1.5">
@@ -158,9 +149,9 @@ const SequentialTransfer = ({ settlements, onClose, onComplete, onStateChange })
         </div>
       </div>
 
-      {/* 카드 영역 */}
+      {/* 카드 영역 - 중앙 정렬 */}
       <div className="flex-1 flex items-center justify-center px-5 min-h-0">
-        <div className="w-full max-w-sm">
+        <div className="w-full max-w-sm mx-auto">
           <div
             className={`bg-white dark:bg-gray-800 rounded-2xl shadow-lg transition-all duration-500 ${
               isAnimating ? 'animate-card-fly-up' : ''
@@ -213,9 +204,52 @@ const SequentialTransfer = ({ settlements, onClose, onComplete, onStateChange })
         </div>
       </div>
 
-      {/* 하단 버튼 영역 여백 */}
-      <div className="shrink-0" style={{ height: 'calc(130px + env(safe-area-inset-bottom))' }} />
     </div>
+
+      {/* 하단 버튼 - 별도 fixed 컨테이너 */}
+      <div className="fixed bottom-0 left-0 right-0 z-[61] bg-white dark:bg-gray-900 px-4 pt-3" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 16px)' }}>
+        <div className="max-w-sm mx-auto space-y-2">
+          {hasOpenedToss ? (
+            <button
+              onClick={handleMarkComplete}
+              disabled={isProcessing}
+              className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white font-bold rounded-2xl shadow-lg shadow-green-500/30 transition-colors"
+            >
+              {isProcessing ? (
+                <span className="loading-dots"><span></span><span></span><span></span></span>
+              ) : (
+                <>
+                  <Check size={18} />
+                  <span>송금 완료했어요</span>
+                </>
+              )}
+            </button>
+          ) : (
+            <button
+              onClick={handleTransfer}
+              disabled={!currentSettlement?.tossDeeplink}
+              className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/30 transition-colors"
+            >
+              <Send size={18} />
+              <span>{currentSettlement?.amount?.toLocaleString()}원 송금</span>
+            </button>
+          )}
+          <button
+            onClick={canSkip ? handleSkip : handleClose}
+            className="w-full py-2 text-gray-500 dark:text-gray-400 text-sm font-medium flex items-center justify-center gap-1"
+          >
+            {canSkip ? (
+              <>
+                다음에 할게요
+                <ChevronRight size={14} />
+              </>
+            ) : (
+              '닫기'
+            )}
+          </button>
+        </div>
+      </div>
+    </>
   );
 };
 

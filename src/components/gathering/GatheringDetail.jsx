@@ -26,8 +26,12 @@ const sanitizeText = (text) => {
 const CelebrationOverlay = ({ show, type = 'send', onComplete }) => {
   useEffect(() => {
     if (show) {
+      document.body.classList.add('modal-open');
       const timer = setTimeout(onComplete, 3000);
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(timer);
+        document.body.classList.remove('modal-open');
+      };
     }
   }, [show, onComplete]);
 
@@ -36,7 +40,7 @@ const CelebrationOverlay = ({ show, type = 'send', onComplete }) => {
   const isReceive = type === 'receive';
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center celebration-overlay" style={{ paddingBottom: 'calc(60px + env(safe-area-inset-bottom))' }}>
+    <div className="fixed inset-0 z-[70] flex items-center justify-center celebration-overlay">
       {/* 배경 블러 */}
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm celebration-fade-in" />
 
@@ -160,8 +164,6 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
   const [myPendingSettlements, setMyPendingSettlements] = useState([]);
   const [showSequentialConfirm, setShowSequentialConfirm] = useState(false);
   const [myReceiveSettlements, setMyReceiveSettlements] = useState([]);
-  const [transferState, setTransferState] = useState(null);
-  const [confirmState, setConfirmState] = useState(null);
 
   // 지출 목록 조회
   const fetchExpenses = async () => {
@@ -401,15 +403,11 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
       {showSequentialTransfer && (
         <SequentialTransfer
           settlements={myPendingSettlements}
-          onClose={() => {
-            setShowSequentialTransfer(false);
-            setTransferState(null);
-          }}
+          onClose={() => setShowSequentialTransfer(false)}
           onComplete={() => {
             fetchSettlements();
             setCelebrationType('send');
           }}
-          onStateChange={setTransferState}
         />
       )}
 
@@ -417,15 +415,11 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
       {showSequentialConfirm && (
         <SequentialConfirm
           settlements={myReceiveSettlements}
-          onClose={() => {
-            setShowSequentialConfirm(false);
-            setConfirmState(null);
-          }}
+          onClose={() => setShowSequentialConfirm(false)}
           onComplete={() => {
             fetchSettlements();
             setCelebrationType('receive');
           }}
-          onStateChange={setConfirmState}
         />
       )}
 
@@ -804,23 +798,6 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
         gathering={gathering}
       />
 
-      {/* 하단 고정 정산 바 */}
-      <SettlementBottomBar
-        settlements={settlements}
-        user={user}
-        onTransfer={(pendingList) => {
-          setMyPendingSettlements(pendingList);
-          setShowSequentialTransfer(true);
-        }}
-        onConfirm={(receiveList) => {
-          setMyReceiveSettlements(receiveList);
-          setShowSequentialConfirm(true);
-        }}
-        transferState={transferState}
-        confirmState={confirmState}
-        isTransferOpen={showSequentialTransfer}
-        isConfirmOpen={showSequentialConfirm}
-      />
     </div>
   );
 };
@@ -1164,7 +1141,7 @@ const SettlementBottomBar = ({ settlements, user, onTransfer, onConfirm, transfe
   }
 
   return createPortal(
-    <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] left-0 right-0 px-4 z-50">
+    <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] left-0 right-0 px-4 z-[70]">
       <div className="max-w-md mx-auto">
         {content}
       </div>

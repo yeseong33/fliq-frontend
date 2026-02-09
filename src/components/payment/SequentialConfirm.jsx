@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Check, Clock, ArrowDownLeft } from 'lucide-react';
+import { Check, Clock, ArrowDownLeft, ChevronRight, X } from 'lucide-react';
 import { settlementAPI } from '../../api';
 import toast from 'react-hot-toast';
 
-const SequentialConfirm = ({ settlements, onClose, onComplete, onStateChange }) => {
+const SequentialConfirm = ({ settlements, onClose, onComplete }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [processedIds, setProcessedIds] = useState(new Set());
   const [isAnimating, setIsAnimating] = useState(false);
@@ -15,6 +15,7 @@ const SequentialConfirm = ({ settlements, onClose, onComplete, onStateChange }) 
   const currentSettlement = targetSettlements[currentIndex];
   const processedCount = processedIds.size;
   const isCompleted = currentSettlement?.status === 'COMPLETED';
+  const canSkip = currentIndex < totalCount - 1;
 
   // 다음 카드로 이동
   const goNext = useCallback(() => {
@@ -111,21 +112,11 @@ const SequentialConfirm = ({ settlements, onClose, onComplete, onStateChange }) 
     onClose();
   }, [onClose]);
 
-  // 상태를 부모에게 전달
+  // 배경 스크롤 방지
   useEffect(() => {
-    if (onStateChange && currentSettlement) {
-      onStateChange({
-        currentSettlement,
-        isCompleted,
-        isProcessing,
-        canSkip: currentIndex < totalCount - 1,
-        handleConfirm,
-        handleReject,
-        handleSkip,
-        handleClose,
-      });
-    }
-  }, [currentSettlement, isCompleted, isProcessing, currentIndex, totalCount, handleConfirm, handleReject, handleSkip, handleClose, onStateChange]);
+    document.body.classList.add('modal-open');
+    return () => document.body.classList.remove('modal-open');
+  }, []);
 
   // 모든 카드 처리 시 닫기
   useEffect(() => {
@@ -140,7 +131,7 @@ const SequentialConfirm = ({ settlements, onClose, onComplete, onStateChange }) 
   // 대상이 없는 경우
   if (totalCount === 0) {
     return (
-      <div className="fixed inset-0 z-[60] bg-white dark:bg-gray-900 flex flex-col overflow-hidden min-h-screen">
+      <div className="fixed inset-0 z-[60] bg-white dark:bg-gray-900 flex flex-col overflow-hidden" style={{ height: '100dvh' }}>
         <div className="flex-1 flex flex-col items-center justify-center px-8">
           <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4">
             <Check className="text-green-500" size={32} />
@@ -164,7 +155,8 @@ const SequentialConfirm = ({ settlements, onClose, onComplete, onStateChange }) 
   }
 
   return (
-    <div className="fixed inset-0 z-[60] bg-white dark:bg-gray-900 flex flex-col overflow-hidden min-h-screen">
+    <>
+    <div className="fixed inset-0 z-[60] bg-white dark:bg-gray-900 flex flex-col overflow-hidden">
       {/* 프로그래스 바 */}
       <div className="shrink-0 px-5 pt-4" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)' }}>
         <div className="flex gap-1.5">
@@ -179,9 +171,9 @@ const SequentialConfirm = ({ settlements, onClose, onComplete, onStateChange }) 
         </div>
       </div>
 
-      {/* 카드 영역 */}
+      {/* 카드 영역 - 중앙 정렬 */}
       <div className="flex-1 flex items-center justify-center px-5 min-h-0">
-        <div className="w-full max-w-sm">
+        <div className="w-full max-w-sm mx-auto">
           <div
             className={`bg-white dark:bg-gray-800 rounded-2xl shadow-lg transition-all duration-500 ${
               isAnimating ? 'animate-card-fly-up' : ''
@@ -237,9 +229,60 @@ const SequentialConfirm = ({ settlements, onClose, onComplete, onStateChange }) 
         </div>
       </div>
 
-      {/* 하단 버튼 영역 여백 */}
-      <div className="shrink-0" style={{ height: 'calc(130px + env(safe-area-inset-bottom))' }} />
     </div>
+
+      {/* 하단 버튼 - 별도 fixed 컨테이너 */}
+      <div className="fixed bottom-0 left-0 right-0 z-[61] bg-white dark:bg-gray-900 px-4 pt-3" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 16px)' }}>
+        <div className="max-w-sm mx-auto space-y-2">
+          {isCompleted ? (
+            <>
+              <button
+                onClick={handleConfirm}
+                disabled={isProcessing}
+                className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white font-bold rounded-2xl shadow-lg shadow-green-500/30 transition-colors"
+              >
+                {isProcessing ? (
+                  <span className="loading-dots"><span></span><span></span><span></span></span>
+                ) : (
+                  <>
+                    <Check size={18} />
+                    <span>+{currentSettlement?.amount?.toLocaleString()}원 확인</span>
+                  </>
+                )}
+              </button>
+              <button
+                onClick={handleReject}
+                disabled={isProcessing}
+                className="w-full py-2 text-red-500 dark:text-red-400 text-sm font-medium flex items-center justify-center gap-1 disabled:opacity-50"
+              >
+                <X size={14} />
+                송금 받지 못했어요
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 font-bold rounded-2xl">
+                <Clock size={18} />
+                <span>송금 대기 중</span>
+              </div>
+              <button
+                onClick={canSkip ? handleSkip : handleClose}
+                className="w-full py-2 text-gray-500 dark:text-gray-400 text-sm font-medium flex items-center justify-center gap-1"
+              >
+                {canSkip ? (
+                  <>
+                    건너뛰기
+                    <ChevronRight size={14} />
+                  </>
+                ) : (
+                  '닫기'
+                )}
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </>
   );
 };
 
