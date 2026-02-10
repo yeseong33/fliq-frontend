@@ -18,7 +18,7 @@ const BottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [lastViewedId, setLastViewedId] = useState(null);
-  const { setBack, setForward } = useNavigationStore();
+  const { setBack, setForward, fullscreenModal } = useNavigationStore();
 
   // localStorage에서 최근 본 모임 ID 로드
   useEffect(() => {
@@ -53,7 +53,7 @@ const BottomNav = () => {
   const isGatheringDetail = /^\/gathering\/[^/]+$/.test(location.pathname);
   const shouldShow = showOnPaths.some(p => location.pathname.startsWith(p)) || isGatheringDetail;
 
-  if (!shouldShow) return null;
+  if (!shouldShow || fullscreenModal) return null;
 
   return (
     <nav className="bottom-nav">

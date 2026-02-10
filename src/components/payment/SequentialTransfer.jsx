@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Send, Check, ChevronRight } from 'lucide-react';
 import { getBankName } from '../../utils/tossDeeplink';
 import { settlementAPI } from '../../api';
+import { useNavigationStore } from '../../store/navigationStore';
 import toast from 'react-hot-toast';
 import logger from '../../utils/logger';
 
@@ -91,10 +92,16 @@ const SequentialTransfer = ({ settlements, onClose, onComplete }) => {
     onClose();
   }, [onClose]);
 
-  // 배경 스크롤 방지
+  const { openFullscreenModal, closeFullscreenModal } = useNavigationStore();
+
+  // 배경 스크롤 방지 & 바텀 네비 숨김
   useEffect(() => {
     document.body.classList.add('modal-open');
-    return () => document.body.classList.remove('modal-open');
+    openFullscreenModal();
+    return () => {
+      document.body.classList.remove('modal-open');
+      closeFullscreenModal();
+    };
   }, []);
 
   // 모든 송금 완료 시 바로 닫기

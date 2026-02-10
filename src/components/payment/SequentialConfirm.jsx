@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Check, Clock, ArrowDownLeft, ChevronRight, X } from 'lucide-react';
 import { settlementAPI } from '../../api';
+import { useNavigationStore } from '../../store/navigationStore';
 import toast from 'react-hot-toast';
 import logger from '../../utils/logger';
 
@@ -113,10 +114,16 @@ const SequentialConfirm = ({ settlements, onClose, onComplete }) => {
     onClose();
   }, [onClose]);
 
-  // 배경 스크롤 방지
+  const { openFullscreenModal, closeFullscreenModal } = useNavigationStore();
+
+  // 배경 스크롤 방지 & 바텀 네비 숨김
   useEffect(() => {
     document.body.classList.add('modal-open');
-    return () => document.body.classList.remove('modal-open');
+    openFullscreenModal();
+    return () => {
+      document.body.classList.remove('modal-open');
+      closeFullscreenModal();
+    };
   }, []);
 
   // 모든 카드 처리 시 닫기

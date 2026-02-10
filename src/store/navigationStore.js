@@ -32,6 +32,7 @@ export const useNavigationStore = create((set, get) => ({
   previousPath: null,
   currentPath: null,
   manualDirection: null, // 수동으로 설정된 방향
+  fullscreenModal: false, // 전체화면 모달 열림 여부 (BottomNav 숨김용)
 
   // 경로 변경 시 방향 계산
   updatePath: (newPath) => {
@@ -82,4 +83,8 @@ export const useNavigationStore = create((set, get) => ({
 
   // 애니메이션 완료 후 리셋
   resetDirection: () => set({ direction: 'none' }),
+
+  // 전체화면 모달 제어
+  openFullscreenModal: () => set({ fullscreenModal: true }),
+  closeFullscreenModal: () => set({ fullscreenModal: false }),
 }));

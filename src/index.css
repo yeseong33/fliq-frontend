@@ -64,7 +64,6 @@ body.modal-open .bottom-nav {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
 }
 
 /* 바텀 네비게이션 - sticky로 하단 고정 */
