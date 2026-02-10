@@ -558,28 +558,34 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
           </div>
 
           {/* 지출 등록 버튼 */}
-          <div className="flex gap-2">
-            <button
-              onClick={() => {
-                setUp();
-                navigate(`/gathering/${gathering.id}/expense/new`);
-              }}
-              className="flex-1 px-5 py-4 bg-white dark:bg-gray-800/50 rounded-2xl shadow-[0_2px_8px_0_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_0_rgba(0,0,0,0.2)] flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all"
-            >
-              <div className="flex items-center gap-3">
-                <Plus size={20} className="text-gray-400" />
-                <span className="text-gray-900 dark:text-white">지출 등록</span>
-              </div>
-              <ArrowRight size={16} className="text-gray-400" />
-            </button>
+          <div className="flex flex-col gap-2">
             <button
               onClick={() => {
                 setShowVoiceOverlay(true);
                 voice.startRecording(gathering.id);
               }}
-              className="px-4 py-4 bg-blue-500 hover:bg-blue-600 rounded-2xl shadow-lg shadow-blue-500/20 flex items-center justify-center transition-all active:scale-95"
+              className="w-full px-5 py-4 bg-blue-500 hover:bg-blue-600 rounded-2xl shadow-lg shadow-blue-500/25 flex items-center justify-between transition-all active:scale-[0.98]"
             >
-              <Mic size={22} className="text-white" />
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
+                  <Mic size={20} className="text-white" />
+                </div>
+                <div className="text-left">
+                  <span className="text-white font-medium">음성으로 등록</span>
+                  <p className="text-white/60 text-xs mt-0.5">말로 간편하게 지출을 기록하세요</p>
+                </div>
+              </div>
+              <ArrowRight size={16} className="text-white/60" />
+            </button>
+            <button
+              onClick={() => {
+                setUp();
+                navigate(`/gathering/${gathering.id}/expense/new`);
+              }}
+              className="w-full px-5 py-3 bg-white dark:bg-gray-800/50 rounded-2xl shadow-[0_2px_8px_0_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_0_rgba(0,0,0,0.2)] flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all"
+            >
+              <Plus size={16} className="text-gray-400" />
+              <span className="text-gray-500 dark:text-gray-400 text-sm">직접 입력</span>
             </button>
           </div>
 
