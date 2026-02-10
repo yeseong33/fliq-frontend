@@ -28,6 +28,7 @@ export default {
         'scale-in': 'scale-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
         'bounce-in': 'bounce-in 0.5s ease-out forwards',
         'confetti-fall': 'confetti-fall 3s ease-in-out forwards',
+        'card-stack-enter': 'card-stack-enter 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
       },
       keyframes: {
         shake: {
@@ -57,6 +58,10 @@ export default {
           '0%': { transform: 'translateY(-100%) rotate(0deg)', opacity: '1' },
           '50%': { opacity: '1' },
           '100%': { transform: 'translateY(100vh) rotate(720deg)', opacity: '0' },
+        },
+        'card-stack-enter': {
+          '0%': { opacity: '0', transform: 'scale(0.92) translateY(16px)' },
+          '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
         },
       },
       boxShadow: {

@@ -666,6 +666,22 @@ body.modal-open .bottom-nav {
   animation: confetti-fall 3s ease-in-out forwards;
 }
 
+/* Card stack enter animation */
+@keyframes card-stack-enter {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-card-stack-enter {
+  animation: card-stack-enter 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
 /* Hide reCAPTCHA v3 badge */
 .grecaptcha-badge {
   visibility: hidden !important;
@@ -676,6 +692,7 @@ body.modal-open .bottom-nav {
   .animate-card-fly-up,
   .animate-scale-in,
   .animate-bounce-in,
+  .animate-card-stack-enter,
   .confetti {
     animation: none !important;
     transition: none !important;
