@@ -11,6 +11,12 @@ const CATEGORY_LABELS = {
   OTHER: '기타',
 };
 
+const VALID_CATEGORIES = new Set(Object.keys(CATEGORY_LABELS));
+const VALID_SHARE_TYPES = new Set(['EQUAL', 'CUSTOM', 'PERCENTAGE']);
+const MAX_AMOUNT = 100_000_000;
+const MAX_DESCRIPTION_LENGTH = 200;
+const MAX_LOCATION_LENGTH = 100;
+
 const VoiceRecordingOverlay = ({ isOpen, voiceState, transcript, result, error, savedExpenseId, onStop, onConfirm, onCancel, onClose }) => {
   const [elapsed, setElapsed] = useState(0);
   const timerRef = useRef(null);
@@ -53,14 +59,22 @@ const VoiceRecordingOverlay = ({ isOpen, voiceState, transcript, result, error, 
 
   const v = (field) => (field && typeof field === 'object' && 'value' in field) ? field.value : field;
 
-  const toConfirmData = (item) => ({
-    totalAmount: v(item.totalAmount),
-    description: v(item.description) || '',
-    location: v(item.location) || null,
-    category: v(item.category) || 'OTHER',
-    paidAt: v(item.paidAt) || Date.now(),
-    shareType: v(item.shareType) || 'EQUAL',
-  });
+  const toConfirmData = (item) => {
+    const amount = Number(v(item.totalAmount)) || 0;
+    const desc = String(v(item.description) || '').slice(0, MAX_DESCRIPTION_LENGTH);
+    const loc = v(item.location) ? String(v(item.location)).slice(0, MAX_LOCATION_LENGTH) : null;
+    const cat = VALID_CATEGORIES.has(v(item.category)) ? v(item.category) : 'OTHER';
+    const share = VALID_SHARE_TYPES.has(v(item.shareType)) ? v(item.shareType) : 'EQUAL';
+
+    return {
+      totalAmount: Math.min(Math.max(amount, 1), MAX_AMOUNT),
+      description: desc,
+      location: loc,
+      category: cat,
+      paidAt: v(item.paidAt) || Date.now(),
+      shareType: share,
+    };
+  };
 
   const handleConfirm = () => {
     if (!parsedItems || !Array.isArray(parsedItems)) return;
@@ -80,6 +94,14 @@ const VoiceRecordingOverlay = ({ isOpen, voiceState, transcript, result, error, 
       >
         <X size={24} />
       </button>
+
+      {/* 연결 대기 중 (서버 권한 확인) */}
+      {voiceState === VOICE_STATE.IDLE && !error && (
+        <div className="flex flex-col items-center gap-6">
+          <Loader size={40} className="text-white animate-spin" />
+          <p className="text-white text-lg font-medium">연결 중...</p>
+        </div>
+      )}
 
       {/* LISTENING */}
       {voiceState === VOICE_STATE.LISTENING && (

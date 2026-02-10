@@ -2,6 +2,7 @@ import { useCallback, useRef } from 'react';
 import { realtimeService } from '../services/realtimeService';
 import { audioRecorderService } from '../services/audioRecorderService';
 import { useVoiceStore, VOICE_STATE } from '../store/voiceStore';
+import { VOICE_ERROR_MESSAGES } from '../utils/errorCodes';
 
 export const useVoiceRecording = () => {
   const {
@@ -43,7 +44,9 @@ export const useVoiceRecording = () => {
           socket.off('state');
           setSavedExpenseId(expenseId);
         });
-        socket.on('error', ({ message }) => setError(message));
+        socket.on('error', ({ code, message }) => {
+          setError(VOICE_ERROR_MESSAGES[code] || message);
+        });
 
         // 연결 대기
         await new Promise((resolve, reject) => {
@@ -55,15 +58,32 @@ export const useVoiceRecording = () => {
           socket.once('connect_error', (err) => reject(new Error(err.message || '서버 연결 실패')));
         });
 
-        // audio:start 전송
-        socket.emit('audio:start', { gatheringId });
+        // audio:start 전송 (gatheringId는 정수 필수)
+        socket.emit('audio:start', { gatheringId: Number(gatheringId) });
+
+        // 서버가 권한 확인 후 LISTENING 상태를 보내면 녹음 시작
+        await new Promise((resolve, reject) => {
+          const timeout = setTimeout(() => reject(new Error('서버 응답 시간 초과')), 10000);
+          const onState = ({ state: s }) => {
+            if (s === VOICE_STATE.LISTENING) {
+              clearTimeout(timeout);
+              socket.off('state', onState);
+              resolve();
+            }
+          };
+          const onError = ({ code, message }) => {
+            clearTimeout(timeout);
+            socket.off('state', onState);
+            reject(new Error(VOICE_ERROR_MESSAGES[code] || message));
+          };
+          socket.on('state', onState);
+          socket.once('error', onError);
+        });
 
         // 녹음 시작 (청크 전송)
         audioRecorderService.startRecording((buf) => {
           socket.emit('audio:chunk', { chunk: buf });
         });
-
-        setState(VOICE_STATE.LISTENING);
       } catch (err) {
         setError(err.message || '녹음 시작 실패');
         audioRecorderService.releaseStream();

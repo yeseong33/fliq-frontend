@@ -36,8 +36,7 @@ const GatheringPage = () => {
       // 최근 본 모임 ID 저장
       localStorage.setItem('lastViewedGatheringId', id);
     } catch (error) {
-      toast.error('모임 정보를 불러올 수 없습니다.');
-      navigate('/');
+      toast.error(error.message || '모임 정보를 불러올 수 없습니다.');
     }
   }, [id, getGathering, navigate]);
 

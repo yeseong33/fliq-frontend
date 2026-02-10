@@ -61,6 +61,12 @@ api.interceptors.response.use(
       return Promise.reject(new Error('인증이 만료되었습니다. 다시 로그인해주세요.'));
     }
 
+    if (error.response?.status === 403) {
+      // 멤버십 등 접근 권한 없음 → 홈으로 리다이렉트
+      window.location.href = '/main';
+      return Promise.reject(new Error('접근 권한이 없습니다.'));
+    }
+
     // API 에러 응답 처리
     if (error.response?.data) {
       const errorData = error.response.data;

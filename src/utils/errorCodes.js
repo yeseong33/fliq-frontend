@@ -1,3 +1,25 @@
+// 음성 인식 (리얼타임 서버) 에러 코드
+export const VOICE_ERROR_CODES = {
+  INVALID_INPUT: 'INVALID_INPUT',
+  ACCESS_DENIED: 'ACCESS_DENIED',
+  RATE_LIMITED: 'RATE_LIMITED',
+  AUDIO_TOO_LARGE: 'AUDIO_TOO_LARGE',
+  INVALID_STATE: 'INVALID_STATE',
+};
+
+export const VOICE_ERROR_MESSAGES = {
+  [VOICE_ERROR_CODES.INVALID_INPUT]: '입력값이 올바르지 않습니다.',
+  [VOICE_ERROR_CODES.ACCESS_DENIED]: '이 모임의 참가자만 사용할 수 있습니다.',
+  [VOICE_ERROR_CODES.RATE_LIMITED]: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.',
+  [VOICE_ERROR_CODES.AUDIO_TOO_LARGE]: '녹음이 너무 깁니다. 짧게 다시 녹음해주세요.',
+  [VOICE_ERROR_CODES.INVALID_STATE]: '처리 중 문제가 발생했습니다. 다시 시도해주세요.',
+};
+
+// 공통 에러 코드
+export const COMMON_ERROR_CODES = {
+  ACCESS_DENIED: 'C006',
+};
+
 // 모임 관련 에러 코드
 export const GATHERING_ERROR_CODES = {
   PAYMENT_METHOD_REQUIRED: 'G007',
