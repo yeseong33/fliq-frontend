@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Mic, Square, Check, X, Loader, MessageCircle, Receipt } from 'lucide-react';
 import { VOICE_STATE } from '../../store/voiceStore';
+import { useNavigationStore } from '../../store/navigationStore';
 
 const CATEGORY_LABELS = {
   FOOD: '음식',
@@ -41,12 +42,18 @@ const VoiceRecordingOverlay = ({ isOpen, voiceState, transcript, result, error, 
     }
   }, [voiceState, savedExpenseId, onClose]);
 
-  // 스크롤 방지
+  const { openFullscreenModal, closeFullscreenModal } = useNavigationStore();
+
+  // 스크롤 방지 & 바텀 네비 숨김
   useEffect(() => {
     if (isOpen) {
       document.body.classList.add('modal-open');
+      openFullscreenModal();
     }
-    return () => document.body.classList.remove('modal-open');
+    return () => {
+      document.body.classList.remove('modal-open');
+      closeFullscreenModal();
+    };
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -159,19 +166,20 @@ const VoiceRecordingOverlay = ({ isOpen, voiceState, transcript, result, error, 
 
       {/* FINAL - 결과 확인 */}
       {voiceState === VOICE_STATE.FINAL && result?.type !== 'message' && parsedItems?.length > 0 && (
-        <div className="flex flex-col items-center gap-4 px-6 w-full max-w-sm">
-          <p className="text-white text-lg font-medium mb-2">
+        <div className="flex flex-col items-center gap-4 px-6 w-full max-w-sm max-h-[85vh]">
+          <p className="text-white text-lg font-medium shrink-0">
             {isMultiple ? `${parsedItems.length}건의 지출` : '결과 확인'}
           </p>
 
-          {transcript && (
-            <div className="bg-white/10 rounded-xl p-3 w-full">
-              <p className="text-white/60 text-xs mb-1">인식된 텍스트</p>
-              <p className="text-white/80 text-sm">"{transcript}"</p>
-            </div>
-          )}
+          {/* 스크롤 가능 영역 (인식 텍스트 + 카드) */}
+          <div className="overflow-y-auto min-h-0 w-full space-y-3">
+            {transcript && (
+              <div className="bg-white/10 rounded-xl p-3 w-full">
+                <p className="text-white/60 text-xs mb-1">인식된 텍스트</p>
+                <p className="text-white/80 text-sm">"{transcript}"</p>
+              </div>
+            )}
 
-          <div className={`w-full space-y-3 ${isMultiple ? 'max-h-[50vh] overflow-y-auto' : ''}`}>
             {parsedItems.map((item, idx) => (
               <div key={idx} className="bg-white dark:bg-gray-800 rounded-2xl p-5 w-full space-y-3">
                 {isMultiple && (
@@ -215,7 +223,8 @@ const VoiceRecordingOverlay = ({ isOpen, voiceState, transcript, result, error, 
             ))}
           </div>
 
-          <div className="flex gap-3 w-full mt-2">
+          {/* 버튼 - 항상 하단 고정 */}
+          <div className="flex gap-3 w-full mt-2 shrink-0">
             <button
               onClick={onCancel}
               className="flex-1 py-3 rounded-xl bg-white/10 text-white font-medium hover:bg-white/20 transition-colors"
