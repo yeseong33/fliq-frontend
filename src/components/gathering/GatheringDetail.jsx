@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { Users, QrCode, CreditCard, Receipt, Clock, Pencil, FlaskConical, Calculator, Send, Check, ArrowRight, Settings, Plus, PartyPopper, ChevronRight, X } from 'lucide-react';
+import { Users, QrCode, CreditCard, Receipt, Clock, Pencil, FlaskConical, Calculator, Send, Check, ArrowRight, Settings, Plus, PartyPopper, ChevronRight, X, Mic } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DOMPurify from 'dompurify';
 import { useGathering } from '../../hooks/useGathering';
@@ -15,6 +15,8 @@ import Input from '../common/Input';
 import Modal from '../common/Modal';
 import SequentialTransfer from '../payment/SequentialTransfer';
 import SequentialConfirm from '../payment/SequentialConfirm';
+import VoiceRecordingOverlay from '../voice/VoiceRecordingOverlay';
+import { useVoiceRecording } from '../../hooks/useVoiceRecording';
 
 // XSS 방어를 위한 텍스트 새니타이저
 const sanitizeText = (text) => {
@@ -164,6 +166,8 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
   const [myPendingSettlements, setMyPendingSettlements] = useState([]);
   const [showSequentialConfirm, setShowSequentialConfirm] = useState(false);
   const [myReceiveSettlements, setMyReceiveSettlements] = useState([]);
+  const [showVoiceOverlay, setShowVoiceOverlay] = useState(false);
+  const voice = useVoiceRecording();
 
   // 지출 목록 조회
   const fetchExpenses = async () => {
@@ -554,19 +558,30 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
           </div>
 
           {/* 지출 등록 버튼 */}
-          <button
-            onClick={() => {
-              setUp();
-              navigate(`/gathering/${gathering.id}/expense/new`);
-            }}
-            className="w-full px-5 py-4 bg-white dark:bg-gray-800/50 rounded-2xl shadow-[0_2px_8px_0_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_0_rgba(0,0,0,0.2)] flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all"
-          >
-            <div className="flex items-center gap-3">
-              <Plus size={20} className="text-gray-400" />
-              <span className="text-gray-900 dark:text-white">지출 등록</span>
-            </div>
-            <ArrowRight size={16} className="text-gray-400" />
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                setUp();
+                navigate(`/gathering/${gathering.id}/expense/new`);
+              }}
+              className="flex-1 px-5 py-4 bg-white dark:bg-gray-800/50 rounded-2xl shadow-[0_2px_8px_0_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_0_rgba(0,0,0,0.2)] flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all"
+            >
+              <div className="flex items-center gap-3">
+                <Plus size={20} className="text-gray-400" />
+                <span className="text-gray-900 dark:text-white">지출 등록</span>
+              </div>
+              <ArrowRight size={16} className="text-gray-400" />
+            </button>
+            <button
+              onClick={() => {
+                setShowVoiceOverlay(true);
+                voice.startRecording(gathering.id);
+              }}
+              className="px-4 py-4 bg-blue-500 hover:bg-blue-600 rounded-2xl shadow-lg shadow-blue-500/20 flex items-center justify-center transition-all active:scale-95"
+            >
+              <Mic size={22} className="text-white" />
+            </button>
+          </div>
 
           {/* 정산 계산 버튼 (방장 + 지출 존재 시) */}
           {isOwner && expenses.length > 0 && (
@@ -796,6 +811,28 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
         onUpdate={fetchExpenses}
         categoryLabels={CATEGORY_LABELS}
         gathering={gathering}
+      />
+
+      {/* 음성 녹음 오버레이 */}
+      <VoiceRecordingOverlay
+        isOpen={showVoiceOverlay}
+        voiceState={voice.state}
+        transcript={voice.transcript}
+        result={voice.result}
+        error={voice.error}
+        savedExpenseId={voice.savedExpenseId}
+        onStop={voice.stopRecording}
+        onConfirm={voice.confirm}
+        onCancel={() => {
+          voice.cancel();
+          setShowVoiceOverlay(false);
+        }}
+        onClose={(count) => {
+          setShowVoiceOverlay(false);
+          voice.cancel();
+          fetchExpenses();
+          toast.success(count > 1 ? `${count}건의 지출이 등록되었습니다!` : '지출이 등록되었습니다!');
+        }}
       />
 
     </div>

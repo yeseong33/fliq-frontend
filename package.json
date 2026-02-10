@@ -21,6 +21,7 @@
     "react-google-recaptcha-v3": "^1.11.0",
     "react-hot-toast": "^2.5.2",
     "react-router-dom": "^6.30.1",
+    "socket.io-client": "^4.8.3",
     "tw-elements-react": "^1.0.0-alpha-end",
     "zustand": "^4.5.7"
   },
