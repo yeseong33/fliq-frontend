@@ -58,8 +58,11 @@ export const useVoiceRecording = () => {
           socket.once('connect_error', (err) => reject(new Error(err.message || '서버 연결 실패')));
         });
 
-        // audio:start 전송 (gatheringId는 정수 필수)
-        socket.emit('audio:start', { gatheringId: Number(gatheringId) });
+        // audio:start 전송 (gatheringId는 정수 필수, mimeType으로 서버에 포맷 전달)
+        socket.emit('audio:start', {
+          gatheringId: Number(gatheringId),
+          mimeType: audioRecorderService.getMimeType() || undefined,
+        });
 
         // 서버가 권한 확인 후 LISTENING 상태를 보내면 녹음 시작
         await new Promise((resolve, reject) => {

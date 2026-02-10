@@ -1,6 +1,20 @@
 let stream = null;
 let recorder = null;
 let lastChunkPromise = null;
+let selectedMimeType = null;
+
+const pickMimeType = () => {
+  const candidates = [
+    'audio/webm;codecs=opus',
+    'audio/webm',
+    'audio/mp4',
+    'audio/ogg;codecs=opus',
+  ];
+  for (const mime of candidates) {
+    if (MediaRecorder.isTypeSupported(mime)) return mime;
+  }
+  return ''; // 브라우저 기본값 사용
+};
 
 export const audioRecorderService = {
   async requestPermission() {
@@ -16,17 +30,20 @@ export const audioRecorderService = {
     return stream;
   },
 
+  getMimeType() {
+    return selectedMimeType;
+  },
+
   startRecording(onChunk) {
     if (!stream) throw new Error('마이크 권한이 없습니다. requestPermission()을 먼저 호출하세요.');
 
     lastChunkPromise = null;
+    selectedMimeType = pickMimeType();
 
-    recorder = new MediaRecorder(stream, {
-      mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-        ? 'audio/webm;codecs=opus'
-        : 'audio/webm',
-      audioBitsPerSecond: 128000,
-    });
+    const options = { audioBitsPerSecond: 128000 };
+    if (selectedMimeType) options.mimeType = selectedMimeType;
+
+    recorder = new MediaRecorder(stream, options);
 
     recorder.ondataavailable = (e) => {
       if (e.data.size > 0) {
