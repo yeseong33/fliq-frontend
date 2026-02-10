@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Building2, ChevronRight, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
+import logger from '../../utils/logger';
 import { paymentMethodAPI, PAYMENT_PLATFORMS, BANK_CODES } from '../../api/paymentMethod';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -40,7 +41,7 @@ const SignupAccountStep = ({ onBack }) => {
       completeSignup();
       navigate('/main', { replace: true });
     } catch (error) {
-      console.error('Failed to create payment method:', error);
+      logger.error('Failed to create payment method:', error);
       toast.error(error.message || '계좌 등록에 실패했습니다.');
     } finally {
       setSubmitting(false);

@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { RECAPTCHA, ERROR_CODES } from '../utils/constants';
+import logger from '../utils/logger';
 
 /**
  * reCAPTCHA v3 + v2 fallback 훅
@@ -38,7 +39,7 @@ export const useRecaptcha = () => {
 
     // v3 토큰 생성
     if (!executeV3) {
-      console.warn('reCAPTCHA v3 not ready');
+      logger.warn('reCAPTCHA v3 not ready');
       return { token: null, version: null };
     }
 
@@ -49,7 +50,7 @@ export const useRecaptcha = () => {
         version: RECAPTCHA.VERSION.V3,
       };
     } catch (error) {
-      console.error('reCAPTCHA v3 error:', error);
+      logger.error('reCAPTCHA v3 error:', error);
       return { token: null, version: null };
     }
   }, [executeV3, isV2Required, v2Token]);

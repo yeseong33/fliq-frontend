@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { Users, QrCode, CreditCard, Receipt, Clock, Pencil, FlaskConical, Calculator, Send, Check, ArrowRight, Settings, Plus, PartyPopper, ChevronRight, ChevronDown, X, Mic } from 'lucide-react';
 import toast from 'react-hot-toast';
+import logger from '../../utils/logger';
 import DOMPurify from 'dompurify';
 import { useGathering } from '../../hooks/useGathering';
 import { useAuth } from '../../hooks/useAuth';
@@ -180,7 +181,7 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
       const data = response?.data?.data || response?.data || [];
       setExpenses(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error('Failed to fetch expenses:', error);
+      logger.error('Failed to fetch expenses:', error);
       setExpenses([]);
     } finally {
       setExpensesLoading(false);
@@ -231,7 +232,7 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
 
       setSettlements(Array.isArray(mergedSettlements) ? mergedSettlements : []);
     } catch (error) {
-      console.error('Failed to fetch settlements:', error);
+      logger.error('Failed to fetch settlements:', error);
       setSettlements([]);
     } finally {
       setSettlementsLoading(false);
@@ -247,7 +248,7 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
       toast.success('정산이 계산되었습니다!');
       await fetchSettlements();
     } catch (error) {
-      console.error('Failed to calculate settlement:', error);
+      logger.error('Failed to calculate settlement:', error);
       toast.error(sanitizeText(error.response?.data?.message) || '정산 계산 실패');
     } finally {
       setCalculatingSettlement(false);
@@ -261,7 +262,7 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
       toast.success('송금 완료 처리되었습니다!');
       await fetchSettlements();
     } catch (error) {
-      console.error('Failed to complete settlement:', error);
+      logger.error('Failed to complete settlement:', error);
       toast.error(error.response?.data?.message || '처리 실패');
     }
   };
@@ -273,7 +274,7 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
       toast.success('수령 확인되었습니다!');
       await fetchSettlements();
     } catch (error) {
-      console.error('Failed to confirm settlement:', error);
+      logger.error('Failed to confirm settlement:', error);
       toast.error(error.response?.data?.message || '처리 실패');
     }
   };

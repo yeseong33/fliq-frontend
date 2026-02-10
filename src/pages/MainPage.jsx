@@ -8,6 +8,7 @@ import GatheringList from '../components/gathering/GatheringList';
 import AccountRequiredModal from '../components/common/AccountRequiredModal';
 import usePullToRefresh from '../hooks/usePullToRefresh';
 import PullToRefresh from '../components/common/PullToRefresh';
+import logger from '../utils/logger';
 
 const MainPage = () => {
   const navigate = useNavigate();
@@ -34,7 +35,7 @@ const MainPage = () => {
     try {
       await getMyGatherings();
     } catch (error) {
-      console.error('모임 목록 조회 실패:', error);
+      logger.error('모임 목록 조회 실패:', error);
     }
   }, [getMyGatherings]);
 

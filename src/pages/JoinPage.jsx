@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Camera, Keyboard } from 'lucide-react';
 import toast from 'react-hot-toast';
+import logger from '../utils/logger';
 import { useGathering } from '../hooks/useGathering';
 import { GATHERING_ERROR_CODES } from '../utils/errorCodes';
 import Button from '../components/common/Button';
@@ -41,7 +42,7 @@ const JoinPage = () => {
       }
       setCameraError('');
     } catch (error) {
-      console.error('카메라 접근 실패:', error);
+      logger.error('카메라 접근 실패:', error);
       setCameraError('카메라에 접근할 수 없습니다');
       setShowManualInput(true);
     }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import logger from '../../utils/logger';
 import { expenseAPI } from '../../api';
 import Button from '../common/Button';
 import Modal from '../common/Modal';
@@ -80,7 +81,7 @@ const ExpenseDetailModal = ({ isOpen, onClose, expense, onDelete, categoryLabels
       onDelete?.();
       onClose();
     } catch (error) {
-      console.error('Delete error:', error);
+      logger.error('Delete error:', error);
       toast.error(error.response?.data?.message || '삭제 실패');
     } finally {
       setLoading(false);
@@ -119,7 +120,7 @@ const ExpenseDetailModal = ({ isOpen, onClose, expense, onDelete, categoryLabels
       onUpdate?.();
       onClose();
     } catch (error) {
-      console.error('Update error:', error);
+      logger.error('Update error:', error);
       toast.error(error.response?.data?.message || '수정 실패');
     } finally {
       setLoading(false);

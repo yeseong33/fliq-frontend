@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import { useAuthStore } from './store/authStore';
 import { RECAPTCHA, AUTH_FLOW } from './utils/constants';
+import ErrorBoundary from './components/common/ErrorBoundary';
 import PageTransition from './components/common/PageTransition';
 import BottomNav from './components/common/BottomNav';
 import AuthPage from './pages/AuthPage';
@@ -57,6 +58,7 @@ function App() {
   }
 
   return (
+    <ErrorBoundary>
     <GoogleReCaptchaProvider
       reCaptchaKey={RECAPTCHA.V3_SITE_KEY}
       scriptProps={{
@@ -152,6 +154,7 @@ function App() {
       {/* 바텀 네비게이션 - 스크롤 영역 밖 */}
       <BottomNav />
     </GoogleReCaptchaProvider>
+    </ErrorBoundary>
   );
 }
 

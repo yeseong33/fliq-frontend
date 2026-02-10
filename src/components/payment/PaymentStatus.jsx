@@ -4,6 +4,7 @@ import { usePayment } from '../../hooks/usePayment';
 import { formatCurrency, formatDate } from '../../utils/helpers';
 import { PAYMENT_STATUS, PAYMENT_STATUS_LABELS } from '../../utils/constants';
 import Button from '../common/Button';
+import logger from '../../utils/logger';
 
 const PaymentStatus = ({ gatheringId, onRetry }) => {
   const { getMyPaymentStatus, loading } = usePayment();
@@ -18,7 +19,7 @@ const PaymentStatus = ({ gatheringId, onRetry }) => {
       const data = await getMyPaymentStatus(gatheringId);
       setPaymentInfo(data);
     } catch (error) {
-      console.error('결제 상태 조회 실패:', error);
+      logger.error('결제 상태 조회 실패:', error);
     }
   };
 

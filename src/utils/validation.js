@@ -7,28 +7,6 @@ export const validateEmail = (email) => {
   return emailRegex.test(email);
 };
 
-export const validatePassword = (password) => {
-  if (!password || password.length < 8) return false;
-
-  const hasUpperCase = /[A-Z]/.test(password);
-  const hasLowerCase = /[a-z]/.test(password);
-  const hasNumber = /[0-9]/.test(password);
-  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-
-  return hasUpperCase && hasLowerCase && hasNumber && hasSpecialChar;
-};
-
-export const getPasswordErrors = (password) => {
-  const errors = [];
-  if (!password) return ['비밀번호를 입력해주세요.'];
-  if (password.length < 8) errors.push('8자 이상');
-  if (!/[A-Z]/.test(password)) errors.push('대문자 포함');
-  if (!/[a-z]/.test(password)) errors.push('소문자 포함');
-  if (!/[0-9]/.test(password)) errors.push('숫자 포함');
-  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) errors.push('특수문자 포함');
-  return errors;
-};
-
 export const validateName = (name) => {
   return name && name.trim().length > 0 && name.trim().length <= 50;
 };

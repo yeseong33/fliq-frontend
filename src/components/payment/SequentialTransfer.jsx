@@ -3,6 +3,7 @@ import { Send, Check, ChevronRight } from 'lucide-react';
 import { getBankName } from '../../utils/tossDeeplink';
 import { settlementAPI } from '../../api';
 import toast from 'react-hot-toast';
+import logger from '../../utils/logger';
 
 const SequentialTransfer = ({ settlements, onClose, onComplete }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -62,7 +63,7 @@ const SequentialTransfer = ({ settlements, onClose, onComplete }) => {
 
       toast.success('송금 완료!');
     } catch (error) {
-      console.error('Failed to complete settlement:', error);
+      logger.error('Failed to complete settlement:', error);
       toast.error('처리에 실패했습니다');
     } finally {
       setIsProcessing(false);

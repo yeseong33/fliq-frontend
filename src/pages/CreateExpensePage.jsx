@@ -6,6 +6,7 @@ import { useGathering } from '../hooks/useGathering';
 import { useNavigationStore } from '../store/navigationStore';
 import { expenseAPI } from '../api';
 import Button from '../components/common/Button';
+import logger from '../utils/logger';
 
 const CATEGORIES = [
   { value: 'FOOD', label: '식사', icon: '🍽️' },
@@ -139,7 +140,7 @@ const CreateExpensePage = () => {
       setDown();
       navigate(`/gathering/${gatheringId}`);
     } catch (error) {
-      console.error('Expense Error:', error);
+      logger.error('Expense Error:', error);
       toast.error(error.response?.data?.message || '지출 등록에 실패했습니다');
     } finally {
       setLoading(false);

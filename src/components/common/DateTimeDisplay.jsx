@@ -3,6 +3,7 @@ import { Pencil, Check, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatSmartDate } from '../../utils/helpers';
 import Modal from './Modal';
 import Button from './Button';
+import logger from '../../utils/logger';
 
 const DateTimeDisplay = ({
   dateTime,
@@ -31,7 +32,7 @@ const DateTimeDisplay = ({
       await onDateChange(newDate);
       setIsEditing(false);
     } catch (error) {
-      console.error('날짜 저장 실패:', error);
+      logger.error('날짜 저장 실패:', error);
     } finally {
       setIsSaving(false);
     }

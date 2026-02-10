@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import logger from '../utils/logger';
 import DOMPurify from 'dompurify';
 import Header from '../components/common/Header';
 import BankIcon from '../components/common/BankIcon';
@@ -46,7 +47,7 @@ const AddPaymentMethodPage = () => {
       toast.success('계좌가 등록되었습니다.');
       navigate('/payment-methods', { replace: true });
     } catch (error) {
-      console.error('Failed to create payment method:', error);
+      logger.error('Failed to create payment method:', error);
       toast.error(sanitizeText(error.message) || '계좌 등록에 실패했습니다.');
     } finally {
       setSubmitting(false);

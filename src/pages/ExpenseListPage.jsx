@@ -5,6 +5,7 @@ import { useNavigationStore } from '../store/navigationStore';
 import { useGathering } from '../hooks/useGathering';
 import { expenseAPI } from '../api';
 import ExpenseDetailModal from '../components/gathering/ExpenseDetailModal';
+import logger from '../utils/logger';
 
 const CATEGORY_LABELS = {
   FOOD: '음식',
@@ -48,7 +49,7 @@ const ExpenseListPage = () => {
       const data = response?.data?.data || response?.data || [];
       setExpenses(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error('Failed to fetch expenses:', error);
+      logger.error('Failed to fetch expenses:', error);
       setExpenses([]);
     } finally {
       setLoading(false);

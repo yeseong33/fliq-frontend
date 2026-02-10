@@ -1,3 +1,5 @@
+import logger from './logger';
+
 /**
  * 서버 응답 날짜 파싱 (여러 형식 지원)
  * - epoch millis (number): 1737272200000
@@ -76,7 +78,7 @@ export const formatDate = (dateString) => {
       timeZone: 'Asia/Seoul',
     }).format(date);
   } catch (error) {
-    console.error('날짜 형식 변환 오류:', error);
+    logger.error('날짜 형식 변환 오류:', error);
     return '날짜 형식 오류';
   }
 };
@@ -212,7 +214,7 @@ export const copyToClipboard = async (text) => {
     await navigator.clipboard.writeText(text);
     return true;
   } catch (err) {
-    console.error('클립보드 복사 실패:', err);
+    logger.error('클립보드 복사 실패:', err);
     return false;
   }
 };
@@ -226,7 +228,7 @@ export const shareUrl = async (url, title) => {
       });
       return true;
     } catch (err) {
-      console.error('공유 실패:', err);
+      logger.error('공유 실패:', err);
     }
   }
   

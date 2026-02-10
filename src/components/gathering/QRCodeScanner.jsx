@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Camera, X } from 'lucide-react';
 import toast from 'react-hot-toast';
+import logger from '../../utils/logger';
 import { useGathering } from '../../hooks/useGathering';
 import { GATHERING_ERROR_CODES } from '../../utils/errorCodes';
 import Button from '../common/Button';
@@ -41,7 +42,7 @@ const QRCodeScanner = ({ isOpen, onClose, onSuccess, onPaymentMethodRequired }) 
       }
       setCameraError('');
     } catch (error) {
-      console.error('카메라 접근 실패:', error);
+      logger.error('카메라 접근 실패:', error);
       setCameraError('카메라에 접근할 수 없습니다. 직접 코드를 입력해주세요.');
       setShowManualInput(true);
     }

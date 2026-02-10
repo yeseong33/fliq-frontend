@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Calculator } from 'lucide-react';
 import { useNavigationStore } from '../store/navigationStore';
 import { useAuth } from '../hooks/useAuth';
+import logger from '../utils/logger';
 import { settlementAPI } from '../api';
 import SettlementItem from '../components/gathering/SettlementItem';
 
@@ -49,7 +50,7 @@ const SettlementListPage = () => {
 
       setSettlements(Array.isArray(mergedSettlements) ? mergedSettlements : []);
     } catch (error) {
-      console.error('Failed to fetch settlements:', error);
+      logger.error('Failed to fetch settlements:', error);
       setSettlements([]);
     } finally {
       setLoading(false);
@@ -72,7 +73,7 @@ const SettlementListPage = () => {
       await settlementAPI.complete(settlementId);
       await fetchSettlements();
     } catch (error) {
-      console.error('Failed to complete settlement:', error);
+      logger.error('Failed to complete settlement:', error);
     }
   };
 
@@ -81,7 +82,7 @@ const SettlementListPage = () => {
       await settlementAPI.confirm(settlementId);
       await fetchSettlements();
     } catch (error) {
-      console.error('Failed to confirm settlement:', error);
+      logger.error('Failed to confirm settlement:', error);
     }
   };
 

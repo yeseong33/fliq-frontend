@@ -33,17 +33,29 @@ const TOSS_BANK_CODES = {
  * @returns {string} 토스 딥링크 URL
  */
 export const createTossTransferLink = ({ bankCode, accountNumber, amount, message }) => {
-  const tossBankCode = TOSS_BANK_CODES[bankCode] || '092';
+  const tossBankCode = TOSS_BANK_CODES[bankCode];
+  if (!tossBankCode) {
+    throw new Error('유효하지 않은 은행 코드입니다.');
+  }
+
   const cleanAccountNumber = accountNumber.replace(/-/g, '');
+  if (!/^\d{7,16}$/.test(cleanAccountNumber)) {
+    throw new Error('유효하지 않은 계좌번호입니다.');
+  }
+
+  const numAmount = Number(amount);
+  if (!Number.isFinite(numAmount) || numAmount <= 0) {
+    throw new Error('유효하지 않은 금액입니다.');
+  }
 
   const params = new URLSearchParams({
     bank: tossBankCode,
     accountNo: cleanAccountNumber,
-    amount: String(amount),
+    amount: String(numAmount),
   });
 
   if (message) {
-    params.append('msg', message);
+    params.append('msg', String(message).slice(0, 50));
   }
 
   return `supertoss://send?${params.toString()}`;
@@ -56,6 +68,11 @@ export const createTossTransferLink = ({ bankCode, accountNumber, amount, messag
  */
 export const openTossTransfer = (params) => {
   const deeplink = createTossTransferLink(params);
+
+  // 딥링크 프로토콜 화이트리스트 검증
+  if (!/^supertoss:\/\/send\?/.test(deeplink)) {
+    throw new Error('유효하지 않은 딥링크입니다.');
+  }
 
   // iOS/Android 구분
   const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, Clock, XCircle, Users, Calculator, Send, Check, ArrowRight, Wallet } from 'lucide-react';
 import toast from 'react-hot-toast';
+import logger from '../../utils/logger';
 import { usePayment } from '../../hooks/usePayment';
 import { useAuth } from '../../hooks/useAuth';
 import { formatCurrency, formatDate } from '../../utils/helpers';
@@ -39,7 +40,7 @@ const PaymentHistory = ({ gatheringId }) => {
       const data = await getGatheringPayments(gatheringId);
       setPayments(data);
     } catch (error) {
-      console.error('결제 내역 조회 실패:', error);
+      logger.error('결제 내역 조회 실패:', error);
     }
   };
 
@@ -51,7 +52,7 @@ const PaymentHistory = ({ gatheringId }) => {
       const data = response?.data?.data || response?.data || [];
       setSettlements(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error('정산 내역 조회 실패:', error);
+      logger.error('정산 내역 조회 실패:', error);
       setSettlements([]);
     } finally {
       setSettlementsLoading(false);
@@ -116,11 +117,11 @@ const PaymentHistory = ({ gatheringId }) => {
         await settlementAPI.confirm(settlementId);
         toast.success('수령 확인까지 자동 처리되었습니다!');
       } catch (confirmError) {
-        console.error('Auto confirm failed:', confirmError);
+        logger.error('Auto confirm failed:', confirmError);
       }
       await loadSettlements();
     } catch (error) {
-      console.error('Failed to complete settlement:', error);
+      logger.error('Failed to complete settlement:', error);
       toast.error(error.response?.data?.message || '처리 실패');
     }
   };
@@ -131,7 +132,7 @@ const PaymentHistory = ({ gatheringId }) => {
       toast.success('수령 확인되었습니다!');
       await loadSettlements();
     } catch (error) {
-      console.error('Failed to confirm settlement:', error);
+      logger.error('Failed to confirm settlement:', error);
       toast.error(error.response?.data?.message || '처리 실패');
     }
   };

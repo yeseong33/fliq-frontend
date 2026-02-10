@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { paymentMethodAPI } from '../api/paymentMethod';
+import logger from '../utils/logger';
 
 export const useAccountCheck = () => {
   const [hasAccount, setHasAccount] = useState(null); // null = loading
@@ -15,7 +16,7 @@ export const useAccountCheck = () => {
       setHasAccount(data.length > 0);
       return data.length > 0;
     } catch (error) {
-      console.error('Failed to check account:', error);
+      logger.error('Failed to check account:', error);
       setHasAccount(false);
       return false;
     } finally {

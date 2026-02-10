@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
 import { Share2, Download, Copy, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
+import logger from '../../utils/logger';
 import { copyToClipboard, shareUrl, getRemainingTime } from '../../utils/helpers';
 import { gatheringAPI } from '../../api';
 import Button from '../common/Button';
@@ -44,7 +45,7 @@ const QRCodeDisplay = ({ isOpen, onClose, gathering, onRefresh }) => {
       });
       setQrCodeUrl(url);
     } catch (error) {
-      console.error('QR 코드 생성 실패:', error);
+      logger.error('QR 코드 생성 실패:', error);
       toast.error('QR 코드 생성에 실패했습니다.');
     }
   };
@@ -53,7 +54,7 @@ const QRCodeDisplay = ({ isOpen, onClose, gathering, onRefresh }) => {
     const shareData = {
       title: `${gathering.title} - Dutch Pay`,
       text: `${gathering.title} 모임에 참여하세요!`,
-      url: window.location.origin + `/join?qr=${gathering.qrCode}`
+      url: `${window.location.origin}/join?qr=${encodeURIComponent(gathering.qrCode)}`
     };
 
     const success = await shareUrl(shareData.url, shareData.title);
@@ -93,7 +94,7 @@ const QRCodeDisplay = ({ isOpen, onClose, gathering, onRefresh }) => {
         onRefresh(updatedGathering);
       }
     } catch (error) {
-      console.error('QR 코드 갱신 실패:', error);
+      logger.error('QR 코드 갱신 실패:', error);
       toast.error('QR 코드 갱신에 실패했습니다.');
     } finally {
       setRefreshing(false);

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Check, Clock, ArrowDownLeft, ChevronRight, X } from 'lucide-react';
 import { settlementAPI } from '../../api';
 import toast from 'react-hot-toast';
+import logger from '../../utils/logger';
 
 const SequentialConfirm = ({ settlements, onClose, onComplete }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -55,7 +56,7 @@ const SequentialConfirm = ({ settlements, onClose, onComplete }) => {
       goNext();
       toast.success('수령 확인!');
     } catch (error) {
-      console.error('Failed to confirm settlement:', error);
+      logger.error('Failed to confirm settlement:', error);
       toast.error('처리에 실패했습니다');
     } finally {
       setIsProcessing(false);
@@ -89,7 +90,7 @@ const SequentialConfirm = ({ settlements, onClose, onComplete }) => {
       goNext();
       toast.success('재요청되었습니다');
     } catch (error) {
-      console.error('Failed to reject settlement:', error);
+      logger.error('Failed to reject settlement:', error);
       toast.error('처리에 실패했습니다');
     } finally {
       setIsProcessing(false);

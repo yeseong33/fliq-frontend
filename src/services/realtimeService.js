@@ -1,7 +1,27 @@
 import { io } from 'socket.io-client';
+import logger from '../utils/logger';
 import { STORAGE_KEYS } from '../utils/constants';
 
-const REALTIME_URL = import.meta.env.VITE_REALTIME_URL || 'http://localhost:4000';
+const getRealtimeUrl = () => {
+  const url = import.meta.env.VITE_REALTIME_URL;
+  if (!url) return 'http://localhost:4000';
+  try {
+    const parsed = new URL(url);
+    if (import.meta.env.PROD && parsed.protocol !== 'https:' && parsed.protocol !== 'wss:') {
+      logger.error('Realtime URL must use HTTPS/WSS in production');
+      return null;
+    }
+    return url;
+  } catch {
+    logger.error('Invalid REALTIME_URL format');
+    return null;
+  }
+};
+
+const getToken = () => {
+  const bearerToken = sessionStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN) || '';
+  return bearerToken.replace(/^Bearer\s+/i, '');
+};
 
 let socket = null;
 
@@ -9,14 +29,19 @@ export const realtimeService = {
   connect() {
     if (socket?.connected) return socket;
 
-    const bearerToken = sessionStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN) || '';
-    const token = bearerToken.replace(/^Bearer\s+/i, '');
+    const url = getRealtimeUrl();
+    if (!url) return null;
 
-    socket = io(REALTIME_URL, {
-      auth: { token },
-      transports: ['websocket', 'polling'],
+    socket = io(url, {
+      auth: { token: getToken() },
+      transports: import.meta.env.PROD ? ['websocket'] : ['websocket', 'polling'],
       reconnectionAttempts: 3,
       reconnectionDelay: 1000,
+    });
+
+    // 재연결 시 최신 토큰 사용
+    socket.on('reconnect_attempt', () => {
+      socket.auth = { token: getToken() };
     });
 
     return socket;

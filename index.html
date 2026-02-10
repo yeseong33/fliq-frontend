@@ -10,7 +10,7 @@
     <!-- Content Security Policy -->
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
-      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/;
+      script-src 'self' https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/;
       style-src 'self' 'unsafe-inline';
       img-src 'self' data: https: blob:;
       font-src 'self' data:;
@@ -18,20 +18,7 @@
       frame-src 'self' https://www.google.com/recaptcha/ https://recaptcha.google.com/;
     ">
     <title>Fliq</title>
-    <script>
-      // 페이지 로드 전 테마 적용 (깜빡임 방지)
-      (function() {
-        const theme = localStorage.getItem('theme') || 'dark';
-        if (theme === 'dark') {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
-        var meta = document.querySelector('meta[name="theme-color"][media*="' + (theme === 'dark' ? 'dark' : 'light') + '"]');
-        if (!meta) meta = document.querySelector('meta[name="theme-color"]');
-        if (meta) meta.setAttribute('content', theme === 'dark' ? '#111827' : '#ffffff');
-      })();
-    </script>
+    <script src="/theme-init.js"></script>
   </head>
   <body class="h-full bg-white dark:bg-gray-900">
     <div id="root"></div>

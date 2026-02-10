@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Share2, Download, Copy, RefreshCw } from 'lucide-react';
 import QRCode from 'qrcode';
 import toast from 'react-hot-toast';
+import logger from '../utils/logger';
 import { useGathering } from '../hooks/useGathering';
 import { useNavigationStore } from '../store/navigationStore';
 import { copyToClipboard, shareUrl, getRemainingTime } from '../utils/helpers';
@@ -64,7 +65,7 @@ const QRCodePage = () => {
       });
       setQrCodeUrl(url);
     } catch (error) {
-      console.error('QR 코드 생성 실패:', error);
+      logger.error('QR 코드 생성 실패:', error);
       toast.error('QR 코드 생성에 실패했습니다.');
     }
   };
@@ -73,7 +74,7 @@ const QRCodePage = () => {
     const shareData = {
       title: `${currentGathering.title} - Fliq`,
       text: `${currentGathering.title} 모임에 참여하세요!`,
-      url: window.location.origin + `/join?qr=${currentGathering.qrCode}`
+      url: `${window.location.origin}/join?qr=${encodeURIComponent(currentGathering.qrCode)}`
     };
 
     const success = await shareUrl(shareData.url, shareData.title);
@@ -110,7 +111,7 @@ const QRCodePage = () => {
       // 모임 정보 다시 로드
       await getGathering(gatheringId);
     } catch (error) {
-      console.error('QR 코드 갱신 실패:', error);
+      logger.error('QR 코드 갱신 실패:', error);
       toast.error('QR 코드 갱신에 실패했습니다.');
     } finally {
       setRefreshing(false);

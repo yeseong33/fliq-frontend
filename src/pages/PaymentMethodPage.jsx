@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CreditCard, Plus, Trash2, Check, Building2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import logger from '../utils/logger';
 import DOMPurify from 'dompurify';
 import Header from '../components/common/Header';
 import Button from '../components/common/Button';
@@ -24,7 +25,7 @@ const PaymentMethodPage = () => {
       const response = await paymentMethodAPI.getMyPaymentMethods();
       setPaymentMethods(response.data?.data || []);
     } catch (error) {
-      console.error('Failed to fetch payment methods:', error);
+      logger.error('Failed to fetch payment methods:', error);
       toast.error('결제 수단 목록을 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
@@ -60,7 +61,7 @@ const PaymentMethodPage = () => {
       toast.success('기본 계좌로 설정되었습니다.');
       fetchPaymentMethods();
     } catch (error) {
-      console.error('Failed to set default:', error);
+      logger.error('Failed to set default:', error);
       toast.error(sanitizeText(error.message) || '설정에 실패했습니다.');
     }
   };
@@ -74,7 +75,7 @@ const PaymentMethodPage = () => {
       toast.success('결제 수단이 삭제되었습니다.');
       fetchPaymentMethods();
     } catch (error) {
-      console.error('Failed to delete:', error);
+      logger.error('Failed to delete:', error);
       toast.error(sanitizeText(error.message) || '삭제에 실패했습니다.');
     }
   };

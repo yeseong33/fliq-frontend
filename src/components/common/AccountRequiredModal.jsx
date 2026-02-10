@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Building2, X, ChevronRight } from 'lucide-react';
 import { paymentMethodAPI, PAYMENT_PLATFORMS, BANK_CODES } from '../../api/paymentMethod';
 import toast from 'react-hot-toast';
+import logger from '../../utils/logger';
 
 const AccountRequiredModal = ({ isOpen, onClose, onSuccess, title = '계좌 등록이 필요합니다' }) => {
   const [step, setStep] = useState('info'); // 'info' | 'form'
@@ -38,7 +39,7 @@ const AccountRequiredModal = ({ isOpen, onClose, onSuccess, title = '계좌 등�
       onSuccess?.();
       onClose();
     } catch (error) {
-      console.error('Failed to create payment method:', error);
+      logger.error('Failed to create payment method:', error);
       toast.error(error.message || '계좌 등록에 실패했습니다.');
     } finally {
       setSubmitting(false);
