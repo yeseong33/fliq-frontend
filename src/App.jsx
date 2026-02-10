@@ -17,6 +17,8 @@ import PaymentMethodPage from './pages/PaymentMethodPage';
 import AddPaymentMethodPage from './pages/AddPaymentMethodPage';
 import CreateExpensePage from './pages/CreateExpensePage';
 import QRCodePage from './pages/QRCodePage';
+import ExpenseListPage from './pages/ExpenseListPage';
+import SettlementListPage from './pages/SettlementListPage';
 
 function App() {
   const { user, authFlow, initializing, initialize, needsOTPVerification, pendingCredentials } = useAuthStore();
@@ -109,6 +111,14 @@ function App() {
             <Route
               path="/gathering/:id"
               element={user ? <GatheringPage /> : <Navigate to="/auth" replace />}
+            />
+            <Route
+              path="/gathering/:id/expenses"
+              element={user ? <ExpenseListPage /> : <Navigate to="/auth" replace />}
+            />
+            <Route
+              path="/gathering/:id/settlements"
+              element={user ? <SettlementListPage /> : <Navigate to="/auth" replace />}
             />
             <Route
               path="/gathering/:id/expense/new"

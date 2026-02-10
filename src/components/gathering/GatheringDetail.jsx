@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { Users, QrCode, CreditCard, Receipt, Clock, Pencil, FlaskConical, Calculator, Send, Check, ArrowRight, Settings, Plus, PartyPopper, ChevronRight, X, Mic } from 'lucide-react';
+import { Users, QrCode, CreditCard, Receipt, Clock, Pencil, FlaskConical, Calculator, Send, Check, ArrowRight, Settings, Plus, PartyPopper, ChevronRight, ChevronDown, X, Mic } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DOMPurify from 'dompurify';
 import { useGathering } from '../../hooks/useGathering';
@@ -16,6 +16,8 @@ import Modal from '../common/Modal';
 import SequentialTransfer from '../payment/SequentialTransfer';
 import SequentialConfirm from '../payment/SequentialConfirm';
 import VoiceRecordingOverlay from '../voice/VoiceRecordingOverlay';
+import ExpenseDetailModal from './ExpenseDetailModal';
+import SettlementItem from './SettlementItem';
 import { useVoiceRecording } from '../../hooks/useVoiceRecording';
 
 // XSS 방어를 위한 텍스트 새니타이저
@@ -509,6 +511,26 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
       {/* 탭 콘텐츠 */}
       {activeTab === 'expense' && (
         <div className="space-y-4">
+          {/* 음성 등록 버튼 */}
+          <button
+            onClick={() => {
+              setShowVoiceOverlay(true);
+              voice.startRecording(gathering.id);
+            }}
+            className="w-full px-5 py-4 bg-blue-500 hover:bg-blue-600 rounded-2xl shadow-lg shadow-blue-500/25 flex items-center justify-between transition-all active:scale-[0.98]"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
+                <Mic size={20} className="text-white" />
+              </div>
+              <div className="text-left">
+                <span className="text-white font-medium">음성으로 등록</span>
+                <p className="text-white/60 text-xs mt-0.5">말로 간편하게 지출을 기록하세요</p>
+              </div>
+            </div>
+            <ArrowRight size={16} className="text-white/60" />
+          </button>
+
           {/* 지출 내역 */}
           <div className="px-5 py-4 bg-white dark:bg-gray-800/50 rounded-2xl shadow-[0_2px_8px_0_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_0_rgba(0,0,0,0.2)]">
             <div className="flex items-center justify-between mb-4">
@@ -529,7 +551,7 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
               </div>
             ) : expenses.length > 0 ? (
               <div className="space-y-2">
-                {expenses.map((expense) => (
+                {expenses.slice(0, 3).map((expense) => (
                   <div
                     key={expense.id}
                     onClick={() => setSelectedExpense(expense)}
@@ -548,6 +570,17 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
                     </span>
                   </div>
                 ))}
+                {expenses.length > 3 && (
+                  <button
+                    onClick={() => {
+                      setUp();
+                      navigate(`/gathering/${gathering.id}/expenses`);
+                    }}
+                    className="w-full flex justify-center py-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  >
+                    <ChevronDown size={20} />
+                  </button>
+                )}
               </div>
             ) : (
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">
@@ -557,51 +590,17 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
             )}
           </div>
 
-          {/* 지출 등록 버튼 */}
-          <div className="flex flex-col gap-2">
-            <button
-              onClick={() => {
-                setShowVoiceOverlay(true);
-                voice.startRecording(gathering.id);
-              }}
-              className="w-full px-5 py-4 bg-blue-500 hover:bg-blue-600 rounded-2xl shadow-lg shadow-blue-500/25 flex items-center justify-between transition-all active:scale-[0.98]"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
-                  <Mic size={20} className="text-white" />
-                </div>
-                <div className="text-left">
-                  <span className="text-white font-medium">음성으로 등록</span>
-                  <p className="text-white/60 text-xs mt-0.5">말로 간편하게 지출을 기록하세요</p>
-                </div>
-              </div>
-              <ArrowRight size={16} className="text-white/60" />
-            </button>
-            <button
-              onClick={() => {
-                setUp();
-                navigate(`/gathering/${gathering.id}/expense/new`);
-              }}
-              className="w-full px-5 py-3 bg-white dark:bg-gray-800/50 rounded-2xl shadow-[0_2px_8px_0_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_0_rgba(0,0,0,0.2)] flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all"
-            >
-              <Plus size={16} className="text-gray-400" />
-              <span className="text-gray-500 dark:text-gray-400 text-sm">직접 입력</span>
-            </button>
-          </div>
-
-          {/* 정산 계산 버튼 (방장 + 지출 존재 시) */}
-          {isOwner && expenses.length > 0 && (
-            <Button
-              fullWidth
-              variant="secondary"
-              onClick={handleCalculateSettlement}
-              loading={calculatingSettlement}
-              className="flex items-center justify-center gap-2"
-            >
-              <Calculator size={18} />
-              정산 계산
-            </Button>
-          )}
+          {/* 직접 입력 버튼 */}
+          <button
+            onClick={() => {
+              setUp();
+              navigate(`/gathering/${gathering.id}/expense/new`);
+            }}
+            className="w-full px-5 py-3 bg-white dark:bg-gray-800/50 rounded-2xl shadow-[0_2px_8px_0_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_0_rgba(0,0,0,0.2)] flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all"
+          >
+            <Plus size={16} className="text-gray-400" />
+            <span className="text-gray-500 dark:text-gray-400 text-sm">직접 입력</span>
+          </button>
         </div>
       )}
 
@@ -644,6 +643,32 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
 
       {activeTab === 'settlement' && (
         <div className="space-y-4">
+          {/* 정산 계산 버튼 (방장 + 지출 존재 시) */}
+          {isOwner && expenses.length > 0 && (
+            <button
+              onClick={handleCalculateSettlement}
+              disabled={calculatingSettlement}
+              className="w-full px-5 py-4 bg-blue-500 hover:bg-blue-600 disabled:opacity-70 rounded-2xl shadow-lg shadow-blue-500/25 flex items-center justify-between transition-all active:scale-[0.98]"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
+                  <Calculator size={20} className="text-white" />
+                </div>
+                <div className="text-left">
+                  <span className="text-white font-medium">
+                    {settlements.length > 0 ? '다시 계산하기' : '정산하기'}
+                  </span>
+                  <p className="text-white/60 text-xs mt-0.5">지출 기반으로 정산을 계산합니다</p>
+                </div>
+              </div>
+              {calculatingSettlement ? (
+                <span className="loading-dots"><span></span><span></span><span></span></span>
+              ) : (
+                <ArrowRight size={16} className="text-white/60" />
+              )}
+            </button>
+          )}
+
           {/* 정산 현황 */}
           <div className="px-5 py-4 bg-white dark:bg-gray-800/50 rounded-2xl shadow-[0_2px_8px_0_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_0_rgba(0,0,0,0.2)]">
             <h3 className="font-semibold mb-4 text-gray-900 dark:text-white">정산 현황</h3>
@@ -658,7 +683,7 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
               </div>
             ) : settlements.length > 0 ? (
               <div className="space-y-2">
-                {settlements.map((settlement) => (
+                {settlements.slice(0, 3).map((settlement) => (
                   <SettlementItem
                     key={settlement.id}
                     settlement={settlement}
@@ -667,29 +692,26 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
                     onConfirm={handleConfirmSettlement}
                   />
                 ))}
+                {settlements.length > 3 && (
+                  <button
+                    onClick={() => {
+                      setUp();
+                      navigate(`/gathering/${gathering.id}/settlements`);
+                    }}
+                    className="w-full flex justify-center py-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  >
+                    <ChevronDown size={20} />
+                  </button>
+                )}
               </div>
             ) : (
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <Calculator size={32} className="mx-auto mb-2 opacity-50" />
                 <p>정산 내역이 없습니다</p>
-                <p className="text-sm mt-1">지출 탭에서 정산을 계산해주세요</p>
+                <p className="text-sm mt-1">정산 계산 버튼을 눌러주세요</p>
               </div>
             )}
           </div>
-
-          {/* 정산 계산 버튼 (방장 + 지출 존재 시) */}
-          {isOwner && expenses.length > 0 && (
-            <Button
-              fullWidth
-              variant="secondary"
-              onClick={handleCalculateSettlement}
-              loading={calculatingSettlement}
-              className="flex items-center justify-center gap-2"
-            >
-              <Calculator size={18} />
-              정산 다시 계산
-            </Button>
-          )}
         </div>
       )}
 
@@ -1193,260 +1215,6 @@ const SettlementBottomBar = ({ settlements, user, onTransfer, onConfirm, transfe
   );
 };
 
-// 지출 상세 모달 컴포넌트
-const ExpenseDetailModal = ({ isOpen, onClose, expense, onDelete, categoryLabels, gathering, onUpdate }) => {
-  const [loading, setLoading] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [participantShares, setParticipantShares] = useState([]);
-
-  // 참여자 목록 초기화
-  useEffect(() => {
-    if (isOpen && expense && gathering) {
-      const allParticipants = [];
-
-      // 방장 추가
-      if (gathering.owner) {
-        const isIncluded = expense.participants?.some(p => p.user?.id === gathering.owner.id);
-        const participantData = expense.participants?.find(p => p.user?.id === gathering.owner.id);
-        allParticipants.push({
-          userId: gathering.owner.id,
-          userName: gathering.owner.name || '방장',
-          isOwner: true,
-          included: isIncluded,
-          shareAmount: participantData?.shareAmount || 0,
-        });
-      }
-
-      // 나머지 참여자 추가
-      if (gathering.participants) {
-        gathering.participants.forEach(p => {
-          const participantId = p.user?.id || p.id;
-          if (participantId !== gathering.owner?.id) {
-            const isIncluded = expense.participants?.some(ep => ep.user?.id === participantId);
-            const participantData = expense.participants?.find(ep => ep.user?.id === participantId);
-            allParticipants.push({
-              userId: participantId,
-              userName: p.user?.name || p.name || '알 수 없음',
-              isOwner: false,
-              included: isIncluded,
-              shareAmount: participantData?.shareAmount || 0,
-            });
-          }
-        });
-      }
-
-      setParticipantShares(allParticipants);
-      setIsEditing(false);
-    }
-  }, [isOpen, expense, gathering]);
-
-  if (!expense) return null;
-
-  const formatDateTime = (timestamp) => {
-    if (!timestamp) return '-';
-    const date = new Date(timestamp);
-    return date.toLocaleString('ko-KR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const handleToggleParticipant = (userId) => {
-    setParticipantShares(prev => prev.map(p =>
-      p.userId === userId ? { ...p, included: !p.included } : p
-    ));
-  };
-
-  const handleDelete = async () => {
-    if (!confirm('이 지출을 삭제하시겠습니까?')) return;
-
-    setLoading(true);
-    try {
-      await expenseAPI.delete(expense.id);
-      toast.success('지출이 삭제되었습니다.');
-      onDelete?.();
-      onClose();
-    } catch (error) {
-      console.error('Delete error:', error);
-      toast.error(error.response?.data?.message || '삭제 실패');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSave = async () => {
-    const includedParticipants = participantShares.filter(p => p.included);
-    if (includedParticipants.length === 0) {
-      toast.error('최소 1명의 참여자를 선택해주세요.');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // 기존 지출 삭제 후 새로 생성
-      await expenseAPI.delete(expense.id);
-
-      const requestData = {
-        gatheringId: expense.gatheringId,
-        totalAmount: expense.totalAmount,
-        description: expense.description || undefined,
-        location: expense.location || undefined,
-        category: expense.category,
-        paidAt: expense.paidAt,
-        receiptImageUrl: expense.receiptImageUrl || undefined,
-        shareType: 'EQUAL',
-        participants: includedParticipants.map(p => ({
-          userId: p.userId,
-          shareValue: 0,
-        })),
-      };
-
-      await expenseAPI.create(requestData);
-      toast.success('지출이 수정되었습니다.');
-      onUpdate?.();
-      onClose();
-    } catch (error) {
-      console.error('Update error:', error);
-      toast.error(error.response?.data?.message || '수정 실패');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const includedCount = participantShares.filter(p => p.included).length;
-
-  return (
-    <Modal isOpen={isOpen} onClose={onClose} title="지출 상세">
-      <div className="space-y-4">
-        {/* 금액 */}
-        <div className="text-center py-4 border-b border-gray-200 dark:border-gray-700">
-          <div className="text-3xl font-bold text-gray-900 dark:text-white">
-            {expense.totalAmount?.toLocaleString()}원
-          </div>
-          <span className="inline-block mt-2 text-sm px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full">
-            {categoryLabels[expense.category] || expense.category}
-          </span>
-        </div>
-
-        {/* 상세 정보 */}
-        <div className="space-y-3 text-sm">
-          {expense.description && (
-            <div className="flex justify-between">
-              <span className="text-gray-500 dark:text-gray-400">설명</span>
-              <span className="text-gray-900 dark:text-white">{expense.description}</span>
-            </div>
-          )}
-          {expense.location && (
-            <div className="flex justify-between">
-              <span className="text-gray-500 dark:text-gray-400">위치</span>
-              <span className="text-gray-900 dark:text-white">{expense.location}</span>
-            </div>
-          )}
-          <div className="flex justify-between">
-            <span className="text-gray-500 dark:text-gray-400">결제자</span>
-            <span className="text-gray-900 dark:text-white">{expense.payer?.name || '알 수 없음'}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500 dark:text-gray-400">결제 시간</span>
-            <span className="text-gray-900 dark:text-white">{formatDateTime(expense.paidAt)}</span>
-          </div>
-        </div>
-
-        {/* 참여자 */}
-        <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between mb-2">
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              참여자 {isEditing && `(${includedCount}명 선택)`}
-            </div>
-            <button
-              onClick={() => setIsEditing(!isEditing)}
-              className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
-            >
-              {isEditing ? '취소' : '수정'}
-            </button>
-          </div>
-          <div className="space-y-2 max-h-48 overflow-y-auto">
-            {participantShares.map((p) => (
-              <div key={p.userId} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                {isEditing ? (
-                  <>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={p.included}
-                        onChange={() => handleToggleParticipant(p.userId)}
-                        className="sr-only peer"
-                      />
-                      <div className="w-9 h-5 bg-gray-300 dark:bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
-                    </label>
-                    <span className={`flex-1 ml-3 text-sm ${p.included ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500 line-through'}`}>
-                      {p.userName}
-                      {p.isOwner && <span className="ml-1 text-xs bg-black text-white px-1.5 py-0.5 rounded">방장</span>}
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <span className="text-sm text-gray-900 dark:text-white">
-                      {p.userName}
-                      {p.isOwner && <span className="ml-1 text-xs bg-black text-white px-1.5 py-0.5 rounded">방장</span>}
-                    </span>
-                    <span className="text-sm text-gray-600 dark:text-gray-300">
-                      {p.shareAmount?.toLocaleString()}원
-                    </span>
-                  </>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* 버튼 */}
-        <div className="flex gap-2 pt-2">
-          {isEditing ? (
-            <>
-              <Button
-                type="button"
-                variant="secondary"
-                fullWidth
-                onClick={() => setIsEditing(false)}
-              >
-                취소
-              </Button>
-              <Button
-                type="button"
-                fullWidth
-                onClick={handleSave}
-                loading={loading}
-              >
-                저장
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button
-                type="button"
-                variant="secondary"
-                fullWidth
-                onClick={handleDelete}
-                loading={loading}
-                className="!text-red-600 dark:!text-red-400"
-              >
-                삭제
-              </Button>
-              <Button type="button" fullWidth onClick={onClose}>
-                닫기
-              </Button>
-            </>
-          )}
-        </div>
-      </div>
-    </Modal>
-  );
-};
-
 // 시간 수정 모달 컴포넌트 (달력 범위 선택)
 const TimeEditModal = ({ isOpen, onClose, startAt, endAt, onSave, loading }) => {
   const [viewDate, setViewDate] = useState(new Date());
@@ -1701,116 +1469,6 @@ const TimeEditModal = ({ isOpen, onClose, startAt, endAt, onSave, loading }) => 
         </div>
       </div>
     </Modal>
-  );
-};
-
-// 정산 아이템 컴포넌트
-const SettlementItem = ({ settlement, currentUser, onComplete, onConfirm }) => {
-  const [loading, setLoading] = useState(false);
-
-  const isSender = settlement.fromUser?.id === currentUser?.id || settlement.fromUser?.email === currentUser?.email;
-  const isReceiver = settlement.toUser?.id === currentUser?.id || settlement.toUser?.email === currentUser?.email;
-
-  const handleComplete = async () => {
-    setLoading(true);
-    try {
-      await onComplete(settlement.id);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleConfirm = async () => {
-    setLoading(true);
-    try {
-      await onConfirm(settlement.id);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2 text-sm">
-          <span className={`font-medium ${isSender ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}`}>
-            {settlement.fromUser?.name || '알 수 없음'}
-            {isSender && <span className="text-xs ml-1">(나)</span>}
-          </span>
-          <ArrowRight size={14} className="text-gray-400" />
-          <span className={`font-medium ${isReceiver ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'}`}>
-            {settlement.toUser?.name || '알 수 없음'}
-            {isReceiver && <span className="text-xs ml-1">(나)</span>}
-          </span>
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between">
-        <span className="text-lg font-bold text-gray-900 dark:text-white">
-          {settlement.amount?.toLocaleString()}원
-        </span>
-
-        {/* 액션 버튼 */}
-        {isSender ? (
-          <button
-            onClick={settlement.status === 'PENDING' ? handleComplete : undefined}
-            disabled={loading || settlement.status !== 'PENDING'}
-            className={`flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
-              settlement.status === 'PENDING'
-                ? 'bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50'
-                : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-default'
-            }`}
-          >
-            {loading ? (
-              <span className="loading-dots">
-                <span></span>
-                <span></span>
-                <span></span>
-              </span>
-            ) : (
-              <>
-                {settlement.status === 'PENDING' ? <Send size={14} /> : <Check size={14} />}
-                {settlement.status === 'PENDING' ? '송금하기' : settlement.status === 'COMPLETED' ? '송금완료' : '정산완료'}
-              </>
-            )}
-          </button>
-        ) : isReceiver ? (
-          <button
-            onClick={settlement.status === 'COMPLETED' ? handleConfirm : undefined}
-            disabled={loading || settlement.status !== 'COMPLETED'}
-            className={`flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
-              settlement.status === 'COMPLETED'
-                ? 'bg-green-500 text-white hover:bg-green-600 disabled:opacity-50'
-                : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-default'
-            }`}
-          >
-            {loading ? (
-              <span className="loading-dots">
-                <span></span>
-                <span></span>
-                <span></span>
-              </span>
-            ) : (
-              <>
-                {settlement.status === 'CONFIRMED' ? <Check size={14} /> : <Clock size={14} />}
-                {settlement.status === 'PENDING' ? '송금 대기중' : settlement.status === 'COMPLETED' ? '수령확인' : '정산완료'}
-              </>
-            )}
-          </button>
-        ) : (
-          <span className={`flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg ${
-            settlement.status === 'CONFIRMED'
-              ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
-              : settlement.status === 'COMPLETED'
-                ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
-          }`}>
-            {settlement.status === 'CONFIRMED' ? <Check size={14} /> : settlement.status === 'COMPLETED' ? <Send size={14} /> : <Clock size={14} />}
-            {settlement.status === 'PENDING' ? '대기중' : settlement.status === 'COMPLETED' ? '송금완료' : '정산완료'}
-          </span>
-        )}
-      </div>
-    </div>
   );
 };
 

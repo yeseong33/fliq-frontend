@@ -5,7 +5,8 @@
     <link rel="icon" type="image/svg+xml" href="/fliq-logo.svg" />
     <link rel="apple-touch-icon" href="/fliq-logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#3B82F6" />
+    <meta name="theme-color" content="#111827" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
     <!-- Content Security Policy -->
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
@@ -26,6 +27,9 @@
         } else {
           document.documentElement.classList.remove('dark');
         }
+        var meta = document.querySelector('meta[name="theme-color"][media*="' + (theme === 'dark' ? 'dark' : 'light') + '"]');
+        if (!meta) meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', theme === 'dark' ? '#111827' : '#ffffff');
       })();
     </script>
   </head>

@@ -19,6 +19,8 @@ const getPageDepth = (pathname) => {
   }
 
   // 동적 라우트 매칭
+  if (pathname.match(/^\/gathering\/[^/]+\/expenses$/)) return 3;
+  if (pathname.match(/^\/gathering\/[^/]+\/settlements$/)) return 3;
   if (pathname.startsWith('/gathering/')) return 2;
   if (pathname.startsWith('/payment/')) return 3;
 
