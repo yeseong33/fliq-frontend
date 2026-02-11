@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { ArrowLeft, ArrowRight, Calendar } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useGathering } from '../hooks/useGathering';
 import { validateGatheringTitle, validateGatheringDescription } from '../utils/validation';
 import { GATHERING_ERROR_CODES } from '../utils/errorCodes';
@@ -304,7 +304,7 @@ const CreateGatheringPage = () => {
                 onClick={handlePrevMonth}
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
-                ‹
+                <ChevronLeft size={20} className="text-gray-600 dark:text-gray-300" />
               </button>
               <span className="font-semibold text-gray-900 dark:text-white">
                 {viewDate.getFullYear()}년 {viewDate.getMonth() + 1}월
@@ -314,7 +314,7 @@ const CreateGatheringPage = () => {
                 onClick={handleNextMonth}
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
-                ›
+                <ChevronRight size={20} className="text-gray-600 dark:text-gray-300" />
               </button>
             </div>
 

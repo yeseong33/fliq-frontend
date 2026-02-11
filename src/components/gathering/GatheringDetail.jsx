@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { Users, QrCode, CreditCard, Receipt, Clock, Pencil, FlaskConical, Calculator, Send, Check, ArrowRight, Settings, Plus, PartyPopper, ChevronRight, ChevronDown, X, Mic, LogOut, DoorOpen } from 'lucide-react';
+import { Users, QrCode, CreditCard, Receipt, Clock, Pencil, FlaskConical, Calculator, Send, Check, ArrowRight, Settings, Plus, PartyPopper, ChevronLeft, ChevronRight, ChevronDown, X, Mic, LogOut, DoorOpen } from 'lucide-react';
 import toast from 'react-hot-toast';
 import logger from '../../utils/logger';
 import DOMPurify from 'dompurify';
@@ -1517,7 +1517,7 @@ const TimeEditModal = ({ isOpen, onClose, startAt, endAt, onSave, loading }) => 
             onClick={handlePrevMonth}
             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
-            ‹
+            <ChevronLeft size={20} className="text-gray-600 dark:text-gray-300" />
           </button>
           <span className="font-semibold text-gray-900 dark:text-white">
             {viewDate.getFullYear()}년 {viewDate.getMonth() + 1}월
@@ -1527,7 +1527,7 @@ const TimeEditModal = ({ isOpen, onClose, startAt, endAt, onSave, loading }) => 
             onClick={handleNextMonth}
             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
-            ›
+            <ChevronRight size={20} className="text-gray-600 dark:text-gray-300" />
           </button>
         </div>
 
