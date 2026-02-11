@@ -178,6 +178,7 @@ const ExpenseListPage = () => {
         onUpdate={fetchExpenses}
         categoryLabels={CATEGORY_LABELS}
         gathering={currentGathering}
+        settlementLocked={currentGathering?.status === 'PAYMENT_REQUESTED'}
       />
     </div>
   );

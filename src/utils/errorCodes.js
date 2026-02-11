@@ -33,6 +33,11 @@ export const PAYMENT_METHOD_ERROR_CODES = {
   CANNOT_DELETE_LAST: 'PM006',
 };
 
+// 지출 관련 에러 코드
+export const EXPENSE_ERROR_CODES = {
+  LOCKED_BY_SETTLEMENT: 'E003',
+};
+
 export const AUTH_ERROR_CODES = {
   REQUIRES_OTP: 'U004',
   USER_NOT_FOUND: 'U001',

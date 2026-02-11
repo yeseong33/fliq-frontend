@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CreditCard } from 'lucide-react';
 import toast from '../utils/toast';
@@ -15,6 +15,7 @@ const GatheringPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { currentGathering, getGathering, loading, clearCurrentGathering } = useGathering();
+  const [initialLoaded, setInitialLoaded] = useState(false);
 
   useEffect(() => {
     // id가 유효한 값인지 확인 (undefined 문자열이나 빈 값 제외)
@@ -37,6 +38,8 @@ const GatheringPage = () => {
       localStorage.setItem('lastViewedGatheringId', id);
     } catch (error) {
       toast.error(error.message || '모임 정보를 불러올 수 없습니다.');
+    } finally {
+      setInitialLoaded(true);
     }
   }, [id, getGathering, navigate]);
 
@@ -54,7 +57,8 @@ const GatheringPage = () => {
   const isOwner = currentGathering?.owner?.email === user?.email;
   const canPay = currentGathering?.status === GATHERING_STATUS.PAYMENT_REQUESTED;
 
-  if (loading && !currentGathering) {
+  // 초기 로딩 중이거나 데이터 fetch 중일 때
+  if (!initialLoaded || (loading && !currentGathering)) {
     return null;
   }
 

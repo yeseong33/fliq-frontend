@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Mic, Square, Check, X, Loader, MessageCircle, Receipt } from 'lucide-react';
 import { VOICE_STATE } from '../../store/voiceStore';
 import { useNavigationStore } from '../../store/navigationStore';
@@ -51,16 +52,33 @@ const VoiceRecordingOverlay = ({ isOpen, voiceState, transcript, partialTranscri
   }, [voiceState, savedExpenseId, onClose]);
 
   const { openFullscreenModal, closeFullscreenModal } = useNavigationStore();
+  const overlayRef = useRef(null);
 
-  // 스크롤 방지 & 바텀 네비 숨김
+  // 스크롤 완전 잠금 & 바텀 네비 숨김
   useEffect(() => {
-    if (isOpen) {
-      document.body.classList.add('modal-open');
-      openFullscreenModal();
-    }
+    if (!isOpen) return;
+
+    document.body.classList.add('modal-open');
+    openFullscreenModal();
+
+    // .app-content 스크롤 직접 잠금
+    const appContent = document.querySelector('.app-content');
+    const prevOverflow = appContent?.style.overflow;
+    if (appContent) appContent.style.overflow = 'hidden';
+
+    // document 레벨 touchmove 차단 (스크롤 가능 영역 제외)
+    const preventTouch = (e) => {
+      if (!e.target.closest('[data-scrollable]')) {
+        e.preventDefault();
+      }
+    };
+    document.addEventListener('touchmove', preventTouch, { passive: false });
+
     return () => {
       document.body.classList.remove('modal-open');
+      if (appContent) appContent.style.overflow = prevOverflow || '';
       closeFullscreenModal();
+      document.removeEventListener('touchmove', preventTouch);
     };
   }, [isOpen]);
 
@@ -90,16 +108,8 @@ const VoiceRecordingOverlay = ({ isOpen, voiceState, transcript, partialTranscri
     };
   };
 
-  return (
-    <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm overflow-hidden" style={{ touchAction: 'none' }}>
-      {/* 닫기 버튼 */}
-      <button
-        onClick={onCancel}
-        className="absolute top-4 right-4 p-2 text-white/60 hover:text-white transition-colors"
-      >
-        <X size={24} />
-      </button>
-
+  return createPortal(
+    <div ref={overlayRef} className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm overflow-hidden" style={{ touchAction: 'none' }}>
       {/* 연결 대기 중 (서버 권한 확인) */}
       {voiceState === VOICE_STATE.IDLE && !error && (
         <div className="flex flex-col items-center gap-6">
@@ -292,7 +302,8 @@ const VoiceRecordingOverlay = ({ isOpen, voiceState, transcript, partialTranscri
           </div>
         </div>
       )}
-    </div>
+    </div>,
+    document.body
   );
 };
 

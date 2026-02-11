@@ -122,7 +122,7 @@ const PaymentHistory = ({ gatheringId }) => {
       await loadSettlements();
     } catch (error) {
       logger.error('Failed to complete settlement:', error);
-      toast.error(error.response?.data?.message || '처리 실패');
+      toast.error(error.message || '처리 실패');
     }
   };
 
@@ -133,7 +133,7 @@ const PaymentHistory = ({ gatheringId }) => {
       await loadSettlements();
     } catch (error) {
       logger.error('Failed to confirm settlement:', error);
-      toast.error(error.response?.data?.message || '처리 실패');
+      toast.error(error.message || '처리 실패');
     }
   };
 

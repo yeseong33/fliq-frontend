@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import toast from '../../utils/toast';
 import logger from '../../utils/logger';
 import { expenseAPI } from '../../api';
+import { EXPENSE_ERROR_CODES } from '../../utils/errorCodes';
 import Button from '../common/Button';
 import Modal from '../common/Modal';
 
@@ -24,7 +25,7 @@ const CATEGORIES = [
 const CATEGORY_MAP = Object.fromEntries(CATEGORIES.map(c => [c.value, c]));
 const MAX_AMOUNT = 99999999;
 
-const ExpenseDetailModal = ({ isOpen, onClose, expense, onDelete, categoryLabels, gathering, onUpdate }) => {
+const ExpenseDetailModal = ({ isOpen, onClose, expense, onDelete, categoryLabels, gathering, onUpdate, settlementLocked }) => {
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [participantShares, setParticipantShares] = useState([]);
@@ -123,7 +124,12 @@ const ExpenseDetailModal = ({ isOpen, onClose, expense, onDelete, categoryLabels
       onClose();
     } catch (error) {
       logger.error('Delete error:', error);
-      toast.error(error.response?.data?.message || '삭제 실패');
+      const code = error.code || error.response?.data?.code;
+      if (code === EXPENSE_ERROR_CODES.LOCKED_BY_SETTLEMENT) {
+        toast.error('정산이 진행 중이라 삭제할 수 없습니다.');
+      } else {
+        toast.error(error.message || '삭제 실패');
+      }
     } finally {
       setLoading(false);
     }
@@ -168,7 +174,12 @@ const ExpenseDetailModal = ({ isOpen, onClose, expense, onDelete, categoryLabels
       onClose();
     } catch (error) {
       logger.error('Update error:', error);
-      toast.error(error.response?.data?.message || '수정 실패');
+      const code = error.code || error.response?.data?.code;
+      if (code === EXPENSE_ERROR_CODES.LOCKED_BY_SETTLEMENT) {
+        toast.error('정산이 진행 중이라 수정할 수 없습니다.');
+      } else {
+        toast.error(error.message || '수정 실패');
+      }
     } finally {
       setLoading(false);
     }
@@ -410,6 +421,15 @@ const ExpenseDetailModal = ({ isOpen, onClose, expense, onDelete, categoryLabels
                 loading={loading}
               >
                 저장
+              </Button>
+            </>
+          ) : settlementLocked ? (
+            <>
+              <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-2 flex-1">
+                정산 진행 중에는 수정/삭제할 수 없습니다
+              </p>
+              <Button type="button" fullWidth onClick={onClose}>
+                닫기
               </Button>
             </>
           ) : (

@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, QrCode } from 'lucide-react';
 import { useGathering } from '../hooks/useGathering';
@@ -16,6 +16,7 @@ const MainPage = () => {
   const { gatherings, getMyGatherings, loading, initialize } = useGathering();
   const { hasAccount, refetch: refetchAccount } = useAccountCheck();
   const [showAccountModal, setShowAccountModal] = React.useState(false);
+  const [initialLoaded, setInitialLoaded] = useState(false);
 
   // 컴포넌트가 언마운트될 때 gathering store 초기화
   useEffect(() => {
@@ -36,6 +37,8 @@ const MainPage = () => {
       await getMyGatherings();
     } catch (error) {
       logger.error('모임 목록 조회 실패:', error);
+    } finally {
+      setInitialLoaded(true);
     }
   }, [getMyGatherings]);
 
@@ -86,7 +89,7 @@ const MainPage = () => {
         {/* 모임 목록 */}
         <GatheringList
           gatherings={gatherings}
-          loading={loading}
+          loading={loading || !initialLoaded}
         />
       </div>
       </PullToRefresh>

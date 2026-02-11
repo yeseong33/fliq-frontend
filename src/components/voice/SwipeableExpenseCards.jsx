@@ -273,7 +273,7 @@ const SwipeableExpenseCards = ({ items, transcript, v, toConfirmData, CATEGORY_L
               {acceptedItems.length}건 등록 / {rejectedCount}건 건너뛰기
             </p>
 
-            <div className="w-full space-y-2 max-h-[40vh] overflow-y-auto">
+            <div className="w-full space-y-2 max-h-[40vh] overflow-y-auto" data-scrollable>
               {items.map((item, idx) => {
                 const accepted = decisions[idx]?.accepted;
                 return (

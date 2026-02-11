@@ -251,7 +251,7 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
       await fetchSettlements();
     } catch (error) {
       logger.error('Failed to calculate settlement:', error);
-      toast.error(sanitizeText(error.response?.data?.message) || '정산 계산 실패');
+      toast.error(error.message || '정산 계산 실패');
     } finally {
       setCalculatingSettlement(false);
     }
@@ -265,7 +265,7 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
       await fetchSettlements();
     } catch (error) {
       logger.error('Failed to complete settlement:', error);
-      toast.error(error.response?.data?.message || '처리 실패');
+      toast.error(error.message || '처리 실패');
     }
   };
 
@@ -277,7 +277,7 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
       await fetchSettlements();
     } catch (error) {
       logger.error('Failed to confirm settlement:', error);
-      toast.error(error.response?.data?.message || '처리 실패');
+      toast.error(error.message || '처리 실패');
     }
   };
 
@@ -882,6 +882,7 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
         onUpdate={fetchExpenses}
         categoryLabels={CATEGORY_LABELS}
         gathering={gathering}
+        settlementLocked={settlements.length > 0}
       />
 
       {/* 음성 녹음 오버레이 */}

@@ -148,7 +148,7 @@ const CreateExpensePage = () => {
       navigate(`/gathering/${gatheringId}`);
     } catch (error) {
       logger.error('Expense Error:', error);
-      toast.error(error.response?.data?.message || '지출 등록에 실패했습니다');
+      toast.error(error.message || '지출 등록에 실패했습니다');
     } finally {
       setLoading(false);
     }
