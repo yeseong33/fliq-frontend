@@ -6,6 +6,7 @@ import logger from '../utils/logger';
 import DOMPurify from 'dompurify';
 import Header from '../components/common/Header';
 import Button from '../components/common/Button';
+import Modal from '../components/common/Modal';
 import { paymentMethodAPI, BANK_CODES } from '../api/paymentMethod';
 
 // XSS 방어
@@ -18,6 +19,8 @@ const PaymentMethodPage = () => {
   const navigate = useNavigate();
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [confirmModal, setConfirmModal] = useState(null); // { type: 'default' | 'delete', method }
+  const [processing, setProcessing] = useState(false);
 
   // 결제 수단 목록 조회
   const fetchPaymentMethods = async () => {
@@ -50,12 +53,16 @@ const PaymentMethodPage = () => {
     };
   }, []);
 
-  // 카드 클릭 시 기본 결제 수단으로 설정
-  const handleCardClick = async (method) => {
+  // 카드 클릭 시 기본 결제 수단 설정 확인
+  const handleCardClick = (method) => {
     if (method.isDefault) return;
+    setConfirmModal({ type: 'default', method });
+  };
 
-    if (!confirm('이 계좌를 기본 계좌로 설정할까요?')) return;
-
+  // 기본 설정 실행
+  const handleSetDefault = async () => {
+    const { method } = confirmModal;
+    setProcessing(true);
     try {
       await paymentMethodAPI.setDefault(method.id);
       toast.success('기본 계좌로 설정되었습니다.');
@@ -63,20 +70,32 @@ const PaymentMethodPage = () => {
     } catch (error) {
       logger.error('Failed to set default:', error);
       toast.error(sanitizeText(error.message) || '설정에 실패했습니다.');
+    } finally {
+      setProcessing(false);
+      setConfirmModal(null);
     }
   };
 
-  // 결제 수단 삭제
-  const handleDelete = async (id) => {
-    if (!confirm('이 결제 수단을 삭제하시겠습니까?')) return;
+  // 삭제 확인
+  const handleDeleteClick = (e, method) => {
+    e.stopPropagation();
+    setConfirmModal({ type: 'delete', method });
+  };
 
+  // 삭제 실행
+  const handleDelete = async () => {
+    const { method } = confirmModal;
+    setProcessing(true);
     try {
-      await paymentMethodAPI.delete(id);
+      await paymentMethodAPI.delete(method.id);
       toast.success('결제 수단이 삭제되었습니다.');
       fetchPaymentMethods();
     } catch (error) {
       logger.error('Failed to delete:', error);
       toast.error(sanitizeText(error.message) || '삭제에 실패했습니다.');
+    } finally {
+      setProcessing(false);
+      setConfirmModal(null);
     }
   };
 
@@ -147,10 +166,7 @@ const PaymentMethodPage = () => {
 
                     {paymentMethods.length > 1 && (
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(method.id);
-                        }}
+                        onClick={(e) => handleDeleteClick(e, method)}
                         className="p-2 text-gray-400 hover:text-red-500 rounded-lg transition-colors"
                       >
                         <Trash2 size={18} />
@@ -188,6 +204,53 @@ const PaymentMethodPage = () => {
           계좌 추가
         </Button>
       </div>
+
+      {/* 확인 모달 */}
+      <Modal
+        isOpen={!!confirmModal}
+        onClose={() => !processing && setConfirmModal(null)}
+        title={confirmModal?.type === 'delete' ? '계좌 삭제' : '기본 계좌 설정'}
+      >
+        {confirmModal && (
+          <div className="space-y-5">
+            <p className="text-center text-gray-600 dark:text-gray-300">
+              {confirmModal.type === 'delete' ? (
+                <>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {sanitizeText(getBankLabel(confirmModal.method.bankCode))}
+                  </span>
+                  {' '}계좌를 삭제하시겠습니까?
+                </>
+              ) : (
+                <>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {sanitizeText(getBankLabel(confirmModal.method.bankCode))}
+                  </span>
+                  {' '}계좌를 기본 계좌로 설정할까요?
+                </>
+              )}
+            </p>
+            <div className="flex gap-3">
+              <Button
+                variant="secondary"
+                fullWidth
+                onClick={() => setConfirmModal(null)}
+                disabled={processing}
+              >
+                취소
+              </Button>
+              <Button
+                variant={confirmModal.type === 'delete' ? 'danger' : 'primary'}
+                fullWidth
+                loading={processing}
+                onClick={confirmModal.type === 'delete' ? handleDelete : handleSetDefault}
+              >
+                {confirmModal.type === 'delete' ? '삭제' : '설정'}
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

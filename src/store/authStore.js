@@ -51,29 +51,26 @@ export const useAuthStore = create((set, get) => ({
         return;
       }
 
-      // 필수 약관 동의 여부 확인
-      // 명시적으로 allRequiredAgreed: false 일 때만 동의 페이지 표시
-      let consentChecked = true;
-      let needsConsent = false;
-      try {
-        const res = await consentAPI.checkRequired();
-        const data = res.data?.data || res.data;
-        if (data?.allRequiredAgreed === false) {
-          consentChecked = false;
-          needsConsent = true;
-        }
-      } catch {
-        // 약관 API 실패 시 통과 (서버 미구현 등)
-      }
-
+      // 먼저 인증 상태를 세팅하여 화면을 빠르게 렌더링
       set({
         isAuthenticated: true,
         user: storedUser,
         initializing: false,
         webAuthnSupported,
-        consentChecked,
-        needsConsent,
+        consentChecked: true, // 기본값: 통과 (API 응답 후 갱신)
+        needsConsent: false,
       });
+
+      // 약관 체크는 백그라운드로 수행 (화면 블로킹 없음)
+      try {
+        const res = await consentAPI.checkRequired();
+        const data = res.data?.data || res.data;
+        if (data?.allRequiredAgreed === false) {
+          set({ consentChecked: false, needsConsent: true });
+        }
+      } catch {
+        // 약관 API 실패 시 통과 (서버 미구현 등)
+      }
     } catch (error) {
       sessionStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
       sessionStorage.removeItem(STORAGE_KEYS.USER);

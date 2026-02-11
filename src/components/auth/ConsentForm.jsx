@@ -179,10 +179,10 @@ const ConsentForm = ({ onSwitchToLogin }) => {
               <Info size={24} className="text-blue-500" />
             </div>
             <p className="text-base font-medium text-gray-900 dark:text-white mb-1">
-              나중에 필요해지면, 저희가 다시 요청드릴게요
+              나중에 필요해지면,<br />저희가 다시 요청드릴게요
             </p>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
-              선택 항목은 마이페이지에서 언제든 변경할 수 있어요
+              선택 항목은 마이페이지에서<br />언제든 변경할 수 있어요
             </p>
             <div className="flex gap-3">
               <button
