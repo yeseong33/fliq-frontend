@@ -36,8 +36,9 @@ export const paymentMethodAPI = {
 // 결제 플랫폼
 export const PAYMENT_PLATFORMS = [
   { value: 'TOSS', label: '토스' },
-  { value: 'KAKAO_PAY', label: '카카오페이' },
-  { value: 'NAVER_PAY', label: '네이버페이' },
+  // TODO: 추가 플랫폼 예정
+  // { value: 'KAKAO_PAY', label: '카카오페이' },
+  // { value: 'NAVER_PAY', label: '네이버페이' },
 ];
 
 // 은행 코드

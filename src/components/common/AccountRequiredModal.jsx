@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Building2, X, ChevronRight } from 'lucide-react';
-import { paymentMethodAPI, PAYMENT_PLATFORMS, BANK_CODES } from '../../api/paymentMethod';
+import { paymentMethodAPI, BANK_CODES } from '../../api/paymentMethod';
 import toast from '../../utils/toast';
 import logger from '../../utils/logger';
 
@@ -132,22 +132,14 @@ const AccountRequiredModal = ({ isOpen, onClose, onSuccess, title = '계좌 등�
 
             {/* 폼 */}
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              {/* 플랫폼 선택 */}
+              {/* 플랫폼 - 현재 토스만 지원 */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                   송금 플랫폼
                 </label>
-                <select
-                  value={formData.platform}
-                  onChange={(e) => setFormData({ ...formData, platform: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                >
-                  {PAYMENT_PLATFORMS.map((platform) => (
-                    <option key={platform.value} value={platform.value}>
-                      {platform.label}
-                    </option>
-                  ))}
-                </select>
+                <div className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white">
+                  토스
+                </div>
               </div>
 
               {/* 은행 선택 */}

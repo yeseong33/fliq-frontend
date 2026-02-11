@@ -12,6 +12,7 @@ const ConsentManagePage = () => {
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [originalAgreed, setOriginalAgreed] = useState({});
+  const [expandedType, setExpandedType] = useState(null);
 
   useEffect(() => {
     const fetchConsents = async () => {
@@ -22,16 +23,18 @@ const ConsentManagePage = () => {
 
         const agreedMap = {};
         CONSENT_TYPES.forEach((c) => {
-          const found = consentList.find((item) => item.type === c.type);
-          agreedMap[c.type] = found ? found.agreed : false;
+          const found = consentList.find((item) => (item.consentType || item.type) === c.type);
+          // 필수 약관은 항상 동의 상태로 표시
+          const isAgreed = found ? (found.consentGiven ?? found.agreed ?? false) : false;
+          agreedMap[c.type] = c.required ? true : isAgreed;
         });
 
         setAgreed(agreedMap);
         setOriginalAgreed(agreedMap);
       } catch {
-        // API 실패 시 모두 false로 초기화
+        // API 실패 시 필수는 동의, 선택은 미동의로 초기화
         const agreedMap = Object.fromEntries(
-          CONSENT_TYPES.map((c) => [c.type, false])
+          CONSENT_TYPES.map((c) => [c.type, c.required])
         );
         setAgreed(agreedMap);
         setOriginalAgreed(agreedMap);
@@ -64,6 +67,7 @@ const ConsentManagePage = () => {
       const consents = CONSENT_TYPES.map((c) => ({
         type: c.type,
         agreed: agreed[c.type],
+        version: c.version,
       }));
       await consentAPI.saveAll(consents);
       setOriginalAgreed({ ...agreed });
@@ -124,45 +128,76 @@ const ConsentManagePage = () => {
         <div className="card mb-4">
           <div className="space-y-1">
             {CONSENT_TYPES.map((consent) => (
-              <button
-                key={consent.type}
-                onClick={() => handleToggle(consent.type)}
-                disabled={consent.required}
-                className={`w-full flex items-center justify-between p-4 -mx-2 rounded-2xl transition-all duration-200 ${
-                  consent.required
-                    ? 'opacity-60 cursor-default'
-                    : 'hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer'
-                }`}
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div
-                    className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 transition-colors duration-200 ${
-                      agreed[consent.type]
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600'
-                    }`}
-                  >
-                    {agreed[consent.type] && <Check size={14} />}
-                  </div>
-                  <div className="text-left">
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">
-                      {consent.label}
-                    </div>
-                    <div className="text-xs text-gray-400 dark:text-gray-500">
-                      {consent.required ? '필수 동의' : '선택 동의'}
-                    </div>
-                  </div>
-                </div>
+              <div key={consent.type}>
                 <div
-                  className={`text-xs font-medium px-2 py-1 rounded-full ${
-                    agreed[consent.type]
-                      ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                  className={`flex items-center justify-between p-4 -mx-2 rounded-2xl transition-all duration-200 ${
+                    consent.required
+                      ? 'opacity-60'
+                      : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
                   }`}
                 >
-                  {agreed[consent.type] ? '동의' : '미동의'}
+                  <button
+                    type="button"
+                    onClick={() => handleToggle(consent.type)}
+                    disabled={consent.required}
+                    className={`flex items-center gap-3 min-w-0 flex-1 ${
+                      consent.required ? 'cursor-default' : 'cursor-pointer'
+                    }`}
+                  >
+                    <div
+                      className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 transition-colors duration-200 ${
+                        agreed[consent.type]
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600'
+                      }`}
+                    >
+                      {agreed[consent.type] && <Check size={14} />}
+                    </div>
+                    <div className="text-left">
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">
+                        {consent.label}
+                      </div>
+                      <div className="text-xs text-gray-400 dark:text-gray-500">
+                        {consent.required ? '필수 동의' : '선택 동의'}
+                      </div>
+                    </div>
+                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setExpandedType(
+                          expandedType === consent.type ? null : consent.type
+                        )
+                      }
+                      className="px-2 py-1 text-xs text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 transition-colors"
+                    >
+                      {expandedType === consent.type ? '접기' : '보기'}
+                    </button>
+                    <div
+                      className={`text-xs font-medium px-2 py-1 rounded-full ${
+                        agreed[consent.type]
+                          ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                      }`}
+                    >
+                      {agreed[consent.type] ? '동의' : '미동의'}
+                    </div>
+                  </div>
                 </div>
-              </button>
+
+                {expandedType === consent.type && (
+                  <div className="mx-2 mb-2 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl max-h-60 overflow-y-auto">
+                    <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {consent.summary}
+                    </p>
+                    <hr className="border-gray-200 dark:border-gray-700 mb-2" />
+                    <pre className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed whitespace-pre-wrap font-sans">
+                      {consent.content}
+                    </pre>
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         </div>

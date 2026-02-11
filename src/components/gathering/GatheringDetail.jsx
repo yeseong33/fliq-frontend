@@ -521,25 +521,27 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
       {/* 탭 콘텐츠 */}
       {activeTab === 'expense' && (
         <div className="space-y-4">
-          {/* 음성 등록 버튼 */}
-          <button
-            onClick={() => {
-              setShowVoiceOverlay(true);
-              voice.startRecording(gathering.id);
-            }}
-            className="w-full px-5 py-4 bg-blue-500 hover:bg-blue-600 rounded-2xl shadow-lg shadow-blue-500/25 flex items-center justify-between transition-all active:scale-[0.98]"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
-                <Mic size={20} className="text-white" />
+          {/* 음성 등록 버튼 - 종료된 모임에서는 숨김 */}
+          {gathering.status !== GATHERING_STATUS.CLOSED && (
+            <button
+              onClick={() => {
+                setShowVoiceOverlay(true);
+                voice.startRecording(gathering.id);
+              }}
+              className="w-full px-5 py-4 bg-blue-500 hover:bg-blue-600 rounded-2xl shadow-lg shadow-blue-500/25 flex items-center justify-between transition-all active:scale-[0.98]"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
+                  <Mic size={20} className="text-white" />
+                </div>
+                <div className="text-left">
+                  <span className="text-white font-medium">음성으로 등록</span>
+                  <p className="text-white/60 text-xs mt-0.5">말로 간편하게 지출을 기록하세요</p>
+                </div>
               </div>
-              <div className="text-left">
-                <span className="text-white font-medium">음성으로 등록</span>
-                <p className="text-white/60 text-xs mt-0.5">말로 간편하게 지출을 기록하세요</p>
-              </div>
-            </div>
-            <ArrowRight size={16} className="text-white/60" />
-          </button>
+              <ArrowRight size={16} className="text-white/60" />
+            </button>
+          )}
 
           {/* 지출 내역 */}
           <div className="px-5 py-4 bg-white dark:bg-gray-800/50 rounded-2xl shadow-[0_2px_8px_0_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_0_rgba(0,0,0,0.2)]">
@@ -600,17 +602,19 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
             )}
           </div>
 
-          {/* 직접 입력 버튼 */}
-          <button
-            onClick={() => {
-              setUp();
-              navigate(`/gathering/${gathering.id}/expense/new`);
-            }}
-            className="w-full px-5 py-3 bg-white dark:bg-gray-800/50 rounded-2xl shadow-[0_2px_8px_0_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_0_rgba(0,0,0,0.2)] flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all"
-          >
-            <Plus size={16} className="text-gray-400" />
-            <span className="text-gray-500 dark:text-gray-400 text-sm">직접 입력</span>
-          </button>
+          {/* 직접 입력 버튼 - 종료된 모임에서는 숨김 */}
+          {gathering.status !== GATHERING_STATUS.CLOSED && (
+            <button
+              onClick={() => {
+                setUp();
+                navigate(`/gathering/${gathering.id}/expense/new`);
+              }}
+              className="w-full px-5 py-3 bg-white dark:bg-gray-800/50 rounded-2xl shadow-[0_2px_8px_0_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_0_rgba(0,0,0,0.2)] flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all"
+            >
+              <Plus size={16} className="text-gray-400" />
+              <span className="text-gray-500 dark:text-gray-400 text-sm">직접 입력</span>
+            </button>
+          )}
         </div>
       )}
 
@@ -653,8 +657,8 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
 
       {activeTab === 'settlement' && (
         <div className="space-y-4">
-          {/* 정산 계산 버튼 (방장 + 지출 존재 시) */}
-          {isOwner && expenses.length > 0 && (
+          {/* 정산 계산 버튼 (방장 + 지출 존재 시 + 종료되지 않은 모임) */}
+          {isOwner && expenses.length > 0 && gathering.status !== GATHERING_STATUS.CLOSED && (
             <button
               onClick={handleCalculateSettlement}
               disabled={calculatingSettlement}
@@ -882,7 +886,7 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
         onUpdate={fetchExpenses}
         categoryLabels={CATEGORY_LABELS}
         gathering={gathering}
-        settlementLocked={settlements.length > 0}
+        settlementLocked={settlements.length > 0 || gathering.status === GATHERING_STATUS.CLOSED}
       />
 
       {/* 음성 녹음 오버레이 */}

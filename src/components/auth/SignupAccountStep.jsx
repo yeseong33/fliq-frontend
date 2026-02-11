@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Building2, ChevronRight, ArrowRight } from 'lucide-react';
 import toast from '../../utils/toast';
 import logger from '../../utils/logger';
-import { paymentMethodAPI, PAYMENT_PLATFORMS, BANK_CODES } from '../../api/paymentMethod';
+import { paymentMethodAPI, BANK_CODES } from '../../api/paymentMethod';
 import { useAuth } from '../../hooks/useAuth';
 
 const SignupAccountStep = ({ onBack }) => {
@@ -81,7 +81,7 @@ const SignupAccountStep = ({ onBack }) => {
               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/25">2</div>
               <div>
                 <div className="font-medium text-gray-900 dark:text-white">송금받을 계좌 등록</div>
-                <div className="text-sm text-gray-500 dark:text-gray-400">토스, 카카오페이 등 (선택)</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">토스 (선택)</div>
               </div>
             </div>
           </div>
@@ -123,22 +123,14 @@ const SignupAccountStep = ({ onBack }) => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-sm">
         <form className="space-y-5" onSubmit={handleSubmit} noValidate>
-          {/* 플랫폼 선택 */}
+          {/* 플랫폼 - 현재 토스만 지원 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               송금 플랫폼
             </label>
-            <select
-              value={formData.platform}
-              onChange={(e) => setFormData({ ...formData, platform: e.target.value })}
-              className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-2xl bg-gray-50 dark:bg-gray-700/50 text-gray-900 dark:text-white focus:bg-white dark:focus:bg-gray-700 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all duration-300"
-            >
-              {PAYMENT_PLATFORMS.map((platform) => (
-                <option key={platform.value} value={platform.value}>
-                  {platform.label}
-                </option>
-              ))}
-            </select>
+            <div className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-2xl bg-gray-100 dark:bg-gray-700/50 text-gray-900 dark:text-white">
+              토스
+            </div>
           </div>
 
           {/* 은행 선택 */}

@@ -52,17 +52,18 @@ export const useAuthStore = create((set, get) => ({
       }
 
       // 필수 약관 동의 여부 확인
-      let consentChecked = false;
+      // 명시적으로 allRequiredAgreed: false 일 때만 동의 페이지 표시
+      let consentChecked = true;
       let needsConsent = false;
       try {
         const res = await consentAPI.checkRequired();
         const data = res.data?.data || res.data;
-        consentChecked = data.allRequiredAgreed === true;
-        needsConsent = !consentChecked;
+        if (data?.allRequiredAgreed === false) {
+          consentChecked = false;
+          needsConsent = true;
+        }
       } catch {
-        // 약관 API 실패 시 일단 통과 (서버 미구현 등)
-        consentChecked = true;
-        needsConsent = false;
+        // 약관 API 실패 시 통과 (서버 미구현 등)
       }
 
       set({
@@ -218,16 +219,18 @@ export const useAuthStore = create((set, get) => ({
       const { user } = await authService.loginFinish(passkeyOptions);
 
       // 로그인 시 필수 약관 동의 여부 확인
-      let consentChecked = false;
+      // 명시적으로 allRequiredAgreed: false 일 때만 동의 페이지 표시
+      let consentChecked = true;
       let needsConsent = false;
       try {
         const res = await consentAPI.checkRequired();
         const data = res.data?.data || res.data;
-        consentChecked = data.allRequiredAgreed === true;
-        needsConsent = !consentChecked;
+        if (data?.allRequiredAgreed === false) {
+          consentChecked = false;
+          needsConsent = true;
+        }
       } catch {
-        consentChecked = true;
-        needsConsent = false;
+        // 약관 API 실패 시 통과
       }
 
       set({

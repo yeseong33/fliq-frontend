@@ -424,14 +424,14 @@ const ExpenseDetailModal = ({ isOpen, onClose, expense, onDelete, categoryLabels
               </Button>
             </>
           ) : settlementLocked ? (
-            <>
-              <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-2 flex-1">
-                정산 진행 중에는 수정/삭제할 수 없습니다
+            <div className="w-full space-y-3">
+              <p className="text-xs text-gray-400 dark:text-gray-500 text-center">
+                종료되었거나 정산 진행 중인 모임은 수정/삭제할 수 없습니다
               </p>
-              <Button type="button" fullWidth onClick={onClose}>
+              <Button type="button" variant="secondary" fullWidth onClick={onClose}>
                 닫기
               </Button>
-            </>
+            </div>
           ) : (
             <>
               <Button

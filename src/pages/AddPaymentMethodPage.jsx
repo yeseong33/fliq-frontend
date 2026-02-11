@@ -6,7 +6,7 @@ import DOMPurify from 'dompurify';
 import Header from '../components/common/Header';
 import BankIcon from '../components/common/BankIcon';
 import PlatformIcon from '../components/common/PlatformIcon';
-import { paymentMethodAPI, PAYMENT_PLATFORMS, BANK_CODES } from '../api/paymentMethod';
+import { paymentMethodAPI, BANK_CODES } from '../api/paymentMethod';
 
 // XSS 방어
 const sanitizeText = (text) => {
@@ -60,33 +60,18 @@ const AddPaymentMethodPage = () => {
 
       <div className="page-content">
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* 플랫폼 선택 */}
+          {/* 플랫폼 - 현재 토스만 지원 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
               송금 플랫폼
             </label>
             <div className="grid grid-cols-3 gap-2">
-              {PAYMENT_PLATFORMS.map((platform) => (
-                <button
-                  key={platform.value}
-                  type="button"
-                  onClick={() => setFormData({ ...formData, platform: platform.value })}
-                  className={`p-3 rounded-2xl border-2 transition-all duration-200 flex flex-col items-center gap-2 ${
-                    formData.platform === platform.value
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                      : 'border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-500'
-                  }`}
-                >
-                  <PlatformIcon platform={platform.value} size="md" />
-                  <span className={`text-sm font-medium ${
-                    formData.platform === platform.value
-                      ? 'text-blue-700 dark:text-blue-300'
-                      : 'text-gray-700 dark:text-gray-300'
-                  }`}>
-                    {platform.label}
-                  </span>
-                </button>
-              ))}
+              <div className="p-3 rounded-2xl border-2 border-blue-500 bg-blue-50 dark:bg-blue-900/20 flex flex-col items-center gap-2">
+                <PlatformIcon platform="TOSS" size="md" />
+                <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                  토스
+                </span>
+              </div>
             </div>
           </div>
 

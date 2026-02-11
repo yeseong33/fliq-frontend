@@ -5,6 +5,7 @@ import toast from '../utils/toast';
 import { useGathering } from '../hooks/useGathering';
 import { useNavigationStore } from '../store/navigationStore';
 import { expenseAPI } from '../api';
+import { GATHERING_STATUS } from '../utils/constants';
 import Button from '../components/common/Button';
 import logger from '../utils/logger';
 
@@ -110,7 +111,13 @@ const CreateExpensePage = () => {
     setParticipantShares(prev => prev.map(p => ({ ...p, included: !allIncluded })));
   };
 
+  const isClosed = currentGathering?.status === GATHERING_STATUS.CLOSED;
+
   const handleSubmit = async () => {
+    if (isClosed) {
+      toast.error('종료된 모임에서는 지출을 등록할 수 없습니다');
+      return;
+    }
     const amount = parseFloat(formData.totalAmount);
     if (!formData.totalAmount || isNaN(amount) || amount <= 0) {
       toast.error('금액을 입력해주세요');
@@ -327,7 +334,7 @@ const CreateExpensePage = () => {
             size="lg"
             loading={loading}
             onClick={handleSubmit}
-            disabled={!formData.totalAmount || includedCount === 0}
+            disabled={!formData.totalAmount || includedCount === 0 || isClosed}
           >
             등록하기
           </Button>
