@@ -13,6 +13,10 @@ export const expenseAPI = {
     return api.get(`/expenses/gathering/${gatheringId}`);
   },
 
+  update: (expenseId, expenseData) => {
+    return api.patch(`/expenses/${expenseId}`, expenseData);
+  },
+
   delete: (expenseId) => {
     return api.delete(`/expenses/${expenseId}`);
   }
