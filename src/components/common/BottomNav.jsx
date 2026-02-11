@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, Zap, User } from 'lucide-react';
-import toast from 'react-hot-toast';
+import toast from '../../utils/toast';
 import { useNavigationStore } from '../../store/navigationStore';
 
 const LAST_VIEWED_KEY = 'lastViewedGatheringId';

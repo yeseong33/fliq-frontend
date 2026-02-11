@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import toast from 'react-hot-toast';
+import toast from '../../utils/toast';
 import { Calendar } from 'lucide-react';
 import { useGathering } from '../../hooks/useGathering';
 import { validateGatheringTitle, validateGatheringDescription } from '../../utils/validation';

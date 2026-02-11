@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
+import toast from '../utils/toast';
 import { useGathering } from '../hooks/useGathering';
 import { PAYMENT_STATUS } from '../utils/constants';
 import Header from '../components/common/Header';

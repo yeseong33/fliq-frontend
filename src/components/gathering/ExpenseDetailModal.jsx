@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import toast from 'react-hot-toast';
+import toast from '../../utils/toast';
 import logger from '../../utils/logger';
 import { expenseAPI } from '../../api';
 import Button from '../common/Button';

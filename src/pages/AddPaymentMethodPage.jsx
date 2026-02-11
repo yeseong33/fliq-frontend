@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
+import toast from '../utils/toast';
 import logger from '../utils/logger';
 import DOMPurify from 'dompurify';
 import Header from '../components/common/Header';

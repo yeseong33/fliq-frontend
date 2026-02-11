@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import toast from 'react-hot-toast';
+import toast from '../../utils/toast';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Key, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';

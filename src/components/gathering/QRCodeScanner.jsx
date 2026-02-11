@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import jsQR from 'jsqr';
 import { Camera, X } from 'lucide-react';
-import toast from 'react-hot-toast';
+import toast from '../../utils/toast';
 import logger from '../../utils/logger';
 import { useGathering } from '../../hooks/useGathering';
 import { GATHERING_ERROR_CODES } from '../../utils/errorCodes';

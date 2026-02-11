@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Building2, X, ChevronRight } from 'lucide-react';
 import { paymentMethodAPI, PAYMENT_PLATFORMS, BANK_CODES } from '../../api/paymentMethod';
-import toast from 'react-hot-toast';
+import toast from '../../utils/toast';
 import logger from '../../utils/logger';
 
 const AccountRequiredModal = ({ isOpen, onClose, onSuccess, title = '계좌 등록이 필요합니다' }) => {

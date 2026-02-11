@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
-import toast from 'react-hot-toast';
+import toast from '../../utils/toast';
 import { useAuth } from '../../hooks/useAuth';
 import { useRecaptcha } from '../../hooks/useRecaptcha';
 import { validateEmail } from '../../utils/validation';

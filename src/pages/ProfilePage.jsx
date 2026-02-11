@@ -8,7 +8,7 @@ import { userAPI } from '../api/user';
 import Button from '../components/common/Button';
 import Modal from '../components/common/Modal';
 import Input from '../components/common/Input';
-import toast from 'react-hot-toast';
+import toast from '../utils/toast';
 import usePullToRefresh from '../hooks/usePullToRefresh';
 import PullToRefresh from '../components/common/PullToRefresh';
 

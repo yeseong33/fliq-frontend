@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CreditCard, Smartphone, Building2 } from 'lucide-react';
-import toast from 'react-hot-toast';
+import toast from '../../utils/toast';
 import { usePayment } from '../../hooks/usePayment';
 import { formatCurrency } from '../../utils/helpers';
 import Button from '../common/Button';

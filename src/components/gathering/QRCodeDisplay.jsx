@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
 import { Share2, Download, Copy, RefreshCw } from 'lucide-react';
-import toast from 'react-hot-toast';
+import toast from '../../utils/toast';
 import logger from '../../utils/logger';
 import { copyToClipboard, shareUrl, getRemainingTime } from '../../utils/helpers';
 import { gatheringAPI } from '../../api';

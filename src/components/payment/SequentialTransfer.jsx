@@ -3,7 +3,7 @@ import { Send, Check, ChevronRight } from 'lucide-react';
 import { getBankName } from '../../utils/tossDeeplink';
 import { settlementAPI } from '../../api';
 import { useNavigationStore } from '../../store/navigationStore';
-import toast from 'react-hot-toast';
+import toast from '../../utils/toast';
 import logger from '../../utils/logger';
 
 const SequentialTransfer = ({ settlements, onClose, onComplete }) => {

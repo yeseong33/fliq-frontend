@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Camera, Keyboard } from 'lucide-react';
-import toast from 'react-hot-toast';
+import toast from '../utils/toast';
 import logger from '../utils/logger';
 import { useGathering } from '../hooks/useGathering';
 import { GATHERING_ERROR_CODES } from '../utils/errorCodes';

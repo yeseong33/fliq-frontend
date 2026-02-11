@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Share2, Download, Copy, RefreshCw } from 'lucide-react';
 import QRCode from 'qrcode';
-import toast from 'react-hot-toast';
+import toast from '../utils/toast';
 import logger from '../utils/logger';
 import { useGathering } from '../hooks/useGathering';
 import { useNavigationStore } from '../store/navigationStore';

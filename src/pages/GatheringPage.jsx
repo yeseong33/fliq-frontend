@@ -1,7 +1,7 @@
 import React, { useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CreditCard } from 'lucide-react';
-import toast from 'react-hot-toast';
+import toast from '../utils/toast';
 import { useGathering } from '../hooks/useGathering';
 import { useAuth } from '../hooks/useAuth';
 import { GATHERING_STATUS } from '../utils/constants';

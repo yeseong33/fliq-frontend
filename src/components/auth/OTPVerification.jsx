@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import toast from 'react-hot-toast';
+import toast from '../../utils/toast';
 import { useAuth } from '../../hooks/useAuth';
 import { validateOTP } from '../../utils/validation';
 import { AUTH_FLOW } from '../../utils/constants';

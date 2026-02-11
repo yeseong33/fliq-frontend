@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
-import toast from 'react-hot-toast';
+import toast from '../utils/toast';
 import { useGathering } from '../hooks/useGathering';
 import { useNavigationStore } from '../store/navigationStore';
 import { expenseAPI } from '../api';

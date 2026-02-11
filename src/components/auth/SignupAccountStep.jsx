@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Building2, ChevronRight, ArrowRight } from 'lucide-react';
-import toast from 'react-hot-toast';
+import toast from '../../utils/toast';
 import logger from '../../utils/logger';
 import { paymentMethodAPI, PAYMENT_PLATFORMS, BANK_CODES } from '../../api/paymentMethod';
 import { useAuth } from '../../hooks/useAuth';

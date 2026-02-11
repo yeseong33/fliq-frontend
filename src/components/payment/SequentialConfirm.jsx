@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Check, Clock, ArrowDownLeft, ChevronRight, X } from 'lucide-react';
 import { settlementAPI } from '../../api';
 import { useNavigationStore } from '../../store/navigationStore';
-import toast from 'react-hot-toast';
+import toast from '../../utils/toast';
 import logger from '../../utils/logger';
 
 const SequentialConfirm = ({ settlements, onClose, onComplete }) => {
