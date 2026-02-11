@@ -3,6 +3,7 @@ export const STORAGE_KEYS = {
   USER: 'user',
   SIGNUP_TOKEN: 'signupToken',
   RECOVERY_TOKEN: 'recoveryToken',
+  RETURN_URL: 'returnUrl',
 };
 
 // 인증 플로우 상태

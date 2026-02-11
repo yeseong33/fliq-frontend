@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Camera, Keyboard } from 'lucide-react';
 import toast from 'react-hot-toast';
 import logger from '../utils/logger';
@@ -9,12 +9,36 @@ import Button from '../components/common/Button';
 
 const JoinPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { joinGathering, loading } = useGathering();
   const [manualCode, setManualCode] = useState('');
   const [showManualInput, setShowManualInput] = useState(false);
   const [cameraError, setCameraError] = useState('');
   const videoRef = useRef(null);
   const streamRef = useRef(null);
+  const autoJoinAttempted = useRef(false);
+
+  // URL의 ?qr= 파라미터로 자동 조인
+  useEffect(() => {
+    const qrCode = searchParams.get('qr');
+    if (!qrCode || autoJoinAttempted.current) return;
+    autoJoinAttempted.current = true;
+
+    (async () => {
+      try {
+        const gathering = await joinGathering(qrCode.trim());
+        toast.success('모임에 참여했습니다!');
+        navigate(`/gathering/${gathering.id}`, { replace: true });
+      } catch (error) {
+        if (error.code === GATHERING_ERROR_CODES.PAYMENT_METHOD_REQUIRED) {
+          toast.error('계좌를 먼저 등록해주세요');
+          navigate('/payment-methods/add');
+          return;
+        }
+        toast.error(error.message);
+      }
+    })();
+  }, [searchParams, joinGathering, navigate]);
 
   useEffect(() => {
     if (!showManualInput) {

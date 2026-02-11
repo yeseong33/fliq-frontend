@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import toast from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Key, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { validateEmail } from '../../utils/validation';
@@ -8,6 +8,7 @@ import { validateEmail } from '../../utils/validation';
 const LoginForm = ({ onSwitchToSignup, onSwitchToRecovery }) => {
   const { loginStart, loginFinish, webAuthnSupported, resetFlow } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [shakeField, setShakeField] = useState(false);
@@ -48,7 +49,10 @@ const LoginForm = ({ onSwitchToSignup, onSwitchToRecovery }) => {
       await loginFinish();
 
       toast.success('로그인되었습니다.');
-      navigate('/main', { replace: true });
+      // URL 쿼리 파라미터의 returnUrl로 리다이렉트 (없으면 /main)
+      const returnUrl = searchParams.get('returnUrl');
+      const isSafe = returnUrl && returnUrl.startsWith('/') && !returnUrl.startsWith('//') && !returnUrl.startsWith('/\\');
+      navigate(isSafe ? returnUrl : '/main', { replace: true });
     } catch (err) {
       // 실패 시 상태 초기화
       resetFlow();

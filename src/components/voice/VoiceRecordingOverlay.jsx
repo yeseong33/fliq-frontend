@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Mic, Square, Check, X, Loader, MessageCircle, Receipt } from 'lucide-react';
 import { VOICE_STATE } from '../../store/voiceStore';
 import { useNavigationStore } from '../../store/navigationStore';
+import SwipeableExpenseCards from './SwipeableExpenseCards';
 
 const CATEGORY_LABELS = {
   FOOD: '음식',
@@ -62,7 +63,6 @@ const VoiceRecordingOverlay = ({ isOpen, voiceState, transcript, result, error, 
 
   // parsed는 이제 배열 (복수 지출 지원)
   const parsedItems = result?.parsed;
-  const isMultiple = Array.isArray(parsedItems) && parsedItems.length > 1;
 
   const v = (field) => (field && typeof field === 'object' && 'value' in field) ? field.value : field;
 
@@ -81,15 +81,6 @@ const VoiceRecordingOverlay = ({ isOpen, voiceState, transcript, result, error, 
       paidAt: v(item.paidAt) || Date.now(),
       shareType: share,
     };
-  };
-
-  const handleConfirm = () => {
-    if (!parsedItems || !Array.isArray(parsedItems)) return;
-    if (isMultiple) {
-      onConfirm(parsedItems.map(toConfirmData));
-    } else {
-      onConfirm(toConfirmData(parsedItems[0]));
-    }
   };
 
   return (
@@ -164,87 +155,17 @@ const VoiceRecordingOverlay = ({ isOpen, voiceState, transcript, result, error, 
         </div>
       )}
 
-      {/* FINAL - 결과 확인 */}
+      {/* FINAL - 결과 확인 (스와이프 카드) */}
       {voiceState === VOICE_STATE.FINAL && result?.type !== 'message' && parsedItems?.length > 0 && (
-        <div className="flex flex-col items-center gap-4 px-6 w-full max-w-sm max-h-[85vh]">
-          <p className="text-white text-lg font-medium shrink-0">
-            {isMultiple ? `${parsedItems.length}건의 지출` : '결과 확인'}
-          </p>
-
-          {/* 스크롤 가능 영역 (요약 + 원문 + 카드) */}
-          <div className="overflow-y-auto min-h-0 w-full space-y-3">
-            {transcript && (
-              <div className="bg-white/10 rounded-xl p-3 w-full">
-                <p className="text-white/60 text-xs mb-1">인식된 텍스트</p>
-                <p className="text-white/80 text-sm">"{transcript}"</p>
-              </div>
-            )}
-
-            {parsedItems.map((item, idx) => (
-              <div key={idx} className="bg-white dark:bg-gray-800 rounded-2xl p-5 w-full space-y-3">
-                {isMultiple && (
-                  <p className="text-xs text-gray-400 dark:text-gray-500 font-medium">지출 {idx + 1}</p>
-                )}
-                <div className="text-center">
-                  <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                    {v(item.totalAmount)?.toLocaleString()}원
-                  </p>
-                  {item.originalCurrency && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      {item.originalAmount} {item.originalCurrency} (환율 {item.exchangeRate?.toLocaleString()})
-                    </p>
-                  )}
-                </div>
-
-                {v(item.description) && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500 dark:text-gray-400">설명</span>
-                    <span className="text-gray-900 dark:text-white">{v(item.description)}</span>
-                  </div>
-                )}
-                {v(item.category) && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500 dark:text-gray-400">카테고리</span>
-                    <span className="text-gray-900 dark:text-white">
-                      {CATEGORY_LABELS[v(item.category)] || v(item.category)}
-                    </span>
-                  </div>
-                )}
-                {v(item.location) && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500 dark:text-gray-400">장소</span>
-                    <span className="text-gray-900 dark:text-white">{v(item.location)}</span>
-                  </div>
-                )}
-                {v(item.shareType) && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500 dark:text-gray-400">정산 방식</span>
-                    <span className="text-gray-900 dark:text-white">
-                      {v(item.shareType) === 'EQUAL' ? '균등 분배' : v(item.shareType)}
-                    </span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* 버튼 - 항상 하단 고정 */}
-          <div className="flex gap-3 w-full mt-2 shrink-0">
-            <button
-              onClick={onCancel}
-              className="flex-1 py-3 rounded-xl bg-white/10 text-white font-medium hover:bg-white/20 transition-colors"
-            >
-              취소
-            </button>
-            <button
-              onClick={handleConfirm}
-              className="flex-1 py-3 rounded-xl bg-blue-500 text-white font-medium hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
-            >
-              <Check size={18} />
-              {isMultiple ? `${parsedItems.length}건 확인` : '확인'}
-            </button>
-          </div>
-        </div>
+        <SwipeableExpenseCards
+          items={parsedItems}
+          transcript={transcript}
+          v={v}
+          toConfirmData={toConfirmData}
+          CATEGORY_LABELS={CATEGORY_LABELS}
+          onComplete={onConfirm}
+          onCancel={onCancel}
+        />
       )}
 
       {/* CONFIRMED - 등록 완료 애니메이션 */}

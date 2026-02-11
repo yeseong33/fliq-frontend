@@ -21,6 +21,28 @@ import QRCodePage from './pages/QRCodePage';
 import ExpenseListPage from './pages/ExpenseListPage';
 import SettlementListPage from './pages/SettlementListPage';
 
+// returnUrl 검증: Open Redirect 방지
+const isSafeReturnUrl = (url) =>
+  typeof url === 'string' && url.startsWith('/') && !url.startsWith('//') && !url.startsWith('/\\');
+
+// 비로그인 시 /auth로 리다이렉트하면서 returnUrl을 쿼리 파라미터로 전달
+const RedirectToAuth = () => {
+  const returnUrl = window.location.pathname + window.location.search;
+  const needsReturn = isSafeReturnUrl(returnUrl) && returnUrl !== '/' && returnUrl !== '/auth' && returnUrl !== '/main';
+  const authPath = needsReturn
+    ? `/auth?returnUrl=${encodeURIComponent(returnUrl)}`
+    : '/auth';
+  return <Navigate to={authPath} replace />;
+};
+
+// 로그인 완료 후 URL의 returnUrl 파라미터로 복귀
+const RedirectFromAuth = () => {
+  const params = new URLSearchParams(window.location.search);
+  const returnUrl = params.get('returnUrl');
+  const target = isSafeReturnUrl(returnUrl) ? returnUrl : '/main';
+  return <Navigate to={target} replace />;
+};
+
 function App() {
   const { user, authFlow, initializing, initialize, needsOTPVerification, pendingCredentials } = useAuthStore();
   const location = useLocation();
@@ -96,55 +118,55 @@ function App() {
           <Routes key={location.pathname}>
             <Route
               path="/auth/*"
-              element={(!user || isSignupAccountStep) ? <AuthPage /> : <Navigate to="/main" replace />}
+              element={(!user || isSignupAccountStep) ? <AuthPage /> : <RedirectFromAuth />}
             />
             <Route
               path="/main"
-              element={user ? <MainPage /> : <Navigate to="/auth" replace />}
+              element={user ? <MainPage /> : <RedirectToAuth />}
             />
             <Route
               path="/join"
-              element={user ? <JoinPage /> : <Navigate to="/auth" replace />}
+              element={user ? <JoinPage /> : <RedirectToAuth />}
             />
             <Route
               path="/gathering/new"
-              element={user ? <CreateGatheringPage /> : <Navigate to="/auth" replace />}
+              element={user ? <CreateGatheringPage /> : <RedirectToAuth />}
             />
             <Route
               path="/gathering/:id"
-              element={user ? <GatheringPage /> : <Navigate to="/auth" replace />}
+              element={user ? <GatheringPage /> : <RedirectToAuth />}
             />
             <Route
               path="/gathering/:id/expenses"
-              element={user ? <ExpenseListPage /> : <Navigate to="/auth" replace />}
+              element={user ? <ExpenseListPage /> : <RedirectToAuth />}
             />
             <Route
               path="/gathering/:id/settlements"
-              element={user ? <SettlementListPage /> : <Navigate to="/auth" replace />}
+              element={user ? <SettlementListPage /> : <RedirectToAuth />}
             />
             <Route
               path="/gathering/:id/expense/new"
-              element={user ? <CreateExpensePage /> : <Navigate to="/auth" replace />}
+              element={user ? <CreateExpensePage /> : <RedirectToAuth />}
             />
             <Route
               path="/gathering/:id/qr"
-              element={user ? <QRCodePage /> : <Navigate to="/auth" replace />}
+              element={user ? <QRCodePage /> : <RedirectToAuth />}
             />
             <Route
               path="/payment/:gatheringId"
-              element={user ? <PaymentPage /> : <Navigate to="/auth" replace />}
+              element={user ? <PaymentPage /> : <RedirectToAuth />}
             />
             <Route
               path="/profile"
-              element={user ? <ProfilePage /> : <Navigate to="/auth" replace />}
+              element={user ? <ProfilePage /> : <RedirectToAuth />}
             />
             <Route
               path="/payment-methods"
-              element={user ? <PaymentMethodPage /> : <Navigate to="/auth" replace />}
+              element={user ? <PaymentMethodPage /> : <RedirectToAuth />}
             />
             <Route
               path="/payment-methods/add"
-              element={user ? <AddPaymentMethodPage /> : <Navigate to="/auth" replace />}
+              element={user ? <AddPaymentMethodPage /> : <RedirectToAuth />}
             />
             <Route path="/" element={<Navigate to={user ? "/main" : "/auth"} replace />} />
             <Route path="*" element={<Navigate to={user ? "/main" : "/auth"} replace />} />

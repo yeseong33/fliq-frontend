@@ -1,5 +1,4 @@
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
 import LoginForm from '../components/auth/LoginForm';
 import SignupForm from '../components/auth/SignupForm';
 import OTPVerification from '../components/auth/OTPVerification';
@@ -10,22 +9,14 @@ import { useAuth } from '../hooks/useAuth';
 import { AUTH_FLOW } from '../utils/constants';
 
 const AuthPage = () => {
-  const navigate = useNavigate();
+  // 인증 완료 후 리다이렉트는 App.jsx의 RedirectFromAuth에서 처리
   const {
-    isAuthenticated,
     authFlow,
     goToSignup,
     goToLogin,
     goToRecovery,
     resetFlow,
   } = useAuth();
-
-  // 인증된 사용자는 메인 페이지로 리다이렉트 (단, 계좌 등록 단계는 제외)
-  useEffect(() => {
-    if (isAuthenticated && authFlow !== AUTH_FLOW.SIGNUP_ACCOUNT) {
-      navigate('/main', { replace: true });
-    }
-  }, [isAuthenticated, authFlow, navigate]);
 
 
   const handleSwitchToSignup = () => {
