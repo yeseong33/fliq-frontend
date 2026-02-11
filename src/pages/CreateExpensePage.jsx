@@ -10,10 +10,17 @@ import logger from '../utils/logger';
 
 const CATEGORIES = [
   { value: 'FOOD', label: '식사', icon: '🍽️' },
+  { value: 'CAFE', label: '카페', icon: '☕' },
+  { value: 'DRINK', label: '술/음료', icon: '🍺' },
   { value: 'TRANSPORT', label: '교통', icon: '🚗' },
+  { value: 'TAXI', label: '택시', icon: '🚕' },
+  { value: 'PARKING', label: '주차', icon: '🅿️' },
   { value: 'ACCOMMODATION', label: '숙박', icon: '🏨' },
   { value: 'ENTERTAINMENT', label: '오락', icon: '🎮' },
+  { value: 'CULTURE', label: '문화', icon: '🎬' },
+  { value: 'SPORTS', label: '운동', icon: '⚽' },
   { value: 'SHOPPING', label: '쇼핑', icon: '🛍️' },
+  { value: 'GROCERY', label: '장보기', icon: '🛒' },
   { value: 'OTHER', label: '기타', icon: '📦' },
 ];
 

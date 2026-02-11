@@ -9,10 +9,17 @@ import logger from '../utils/logger';
 
 const CATEGORY_LABELS = {
   FOOD: '음식',
+  CAFE: '카페',
+  DRINK: '술/음료',
   TRANSPORT: '교통',
+  TAXI: '택시',
+  PARKING: '주차',
   ACCOMMODATION: '숙박',
   ENTERTAINMENT: '오락',
+  CULTURE: '문화',
+  SPORTS: '운동',
   SHOPPING: '쇼핑',
+  GROCERY: '장보기',
   OTHER: '기타',
 };
 
