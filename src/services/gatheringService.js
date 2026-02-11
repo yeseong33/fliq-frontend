@@ -35,4 +35,14 @@ export const gatheringService = {
     const response = await gatheringAPI.createPaymentRequest(gatheringId, totalAmount);
     return response.data;
   },
+
+  async leaveGathering(gatheringId) {
+    const response = await gatheringAPI.leaveGathering(gatheringId);
+    return response.data;
+  },
+
+  async closeGathering(gatheringId) {
+    const response = await gatheringAPI.closeGathering(gatheringId);
+    return response.data;
+  },
 };

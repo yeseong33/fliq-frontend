@@ -141,6 +141,32 @@ export const useGatheringStore = create((set, get) => ({
     }
   },
 
+  leaveGathering: async (gatheringId) => {
+    set({ loading: true, error: null });
+    try {
+      await gatheringService.leaveGathering(gatheringId);
+      // 목록에서 해당 모임 제거
+      const gatherings = get().gatherings.filter(g => g.id !== gatheringId);
+      set({ gatherings, currentGathering: null, loading: false });
+    } catch (error) {
+      set({ error: error.message, loading: false });
+      throw error;
+    }
+  },
+
+  closeGathering: async (gatheringId) => {
+    set({ loading: true, error: null });
+    try {
+      await gatheringService.closeGathering(gatheringId);
+      // 목록에서 해당 모임 제거
+      const gatherings = get().gatherings.filter(g => g.id !== gatheringId);
+      set({ gatherings, currentGathering: null, loading: false });
+    } catch (error) {
+      set({ error: error.message, loading: false });
+      throw error;
+    }
+  },
+
   clearCurrentGathering: () => {
     set({ currentGathering: null });
   },

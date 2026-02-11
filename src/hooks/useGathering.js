@@ -15,6 +15,8 @@ export const useGathering = () => {
     updateGathering,
     refreshGathering,
     clearCurrentGathering,
+    leaveGathering,
+    closeGathering,
   } = useGatheringStore();
 
   return {
@@ -31,5 +33,7 @@ export const useGathering = () => {
     updateGathering,
     refreshGathering,
     clearCurrentGathering,
+    leaveGathering,
+    closeGathering,
   };
 };

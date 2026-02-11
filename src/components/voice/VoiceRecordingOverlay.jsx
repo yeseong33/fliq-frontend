@@ -171,7 +171,7 @@ const VoiceRecordingOverlay = ({ isOpen, voiceState, transcript, result, error, 
             {isMultiple ? `${parsedItems.length}건의 지출` : '결과 확인'}
           </p>
 
-          {/* 스크롤 가능 영역 (인식 텍스트 + 카드) */}
+          {/* 스크롤 가능 영역 (요약 + 원문 + 카드) */}
           <div className="overflow-y-auto min-h-0 w-full space-y-3">
             {transcript && (
               <div className="bg-white/10 rounded-xl p-3 w-full">
@@ -189,6 +189,11 @@ const VoiceRecordingOverlay = ({ isOpen, voiceState, transcript, result, error, 
                   <p className="text-3xl font-bold text-gray-900 dark:text-white">
                     {v(item.totalAmount)?.toLocaleString()}원
                   </p>
+                  {item.originalCurrency && (
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                      {item.originalAmount} {item.originalCurrency} (환율 {item.exchangeRate?.toLocaleString()})
+                    </p>
+                  )}
                 </div>
 
                 {v(item.description) && (

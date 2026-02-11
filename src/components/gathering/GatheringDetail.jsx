@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { Users, QrCode, CreditCard, Receipt, Clock, Pencil, FlaskConical, Calculator, Send, Check, ArrowRight, Settings, Plus, PartyPopper, ChevronRight, ChevronDown, X, Mic } from 'lucide-react';
+import { Users, QrCode, CreditCard, Receipt, Clock, Pencil, FlaskConical, Calculator, Send, Check, ArrowRight, Settings, Plus, PartyPopper, ChevronRight, ChevronDown, X, Mic, LogOut, DoorOpen } from 'lucide-react';
 import toast from 'react-hot-toast';
 import logger from '../../utils/logger';
 import DOMPurify from 'dompurify';
@@ -153,7 +153,7 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { setUp } = useNavigationStore();
-  const { createPaymentRequest, updateGathering, loading } = useGathering();
+  const { createPaymentRequest, updateGathering, leaveGathering, closeGathering, loading } = useGathering();
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [showTimeEdit, setShowTimeEdit] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState(null);
@@ -170,6 +170,8 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
   const [showSequentialConfirm, setShowSequentialConfirm] = useState(false);
   const [myReceiveSettlements, setMyReceiveSettlements] = useState([]);
   const [showVoiceOverlay, setShowVoiceOverlay] = useState(false);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const voice = useVoiceRecording();
 
   // 지출 목록 조회
@@ -760,6 +762,39 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
               <ArrowRight size={16} className="text-gray-400" />
             </button>
           )}
+
+          {/* 모임 나가기 / 모임 종료 */}
+          {gathering.status !== GATHERING_STATUS.CLOSED && (
+            isOwner ? (
+              <button
+                onClick={() => setShowCloseConfirm(true)}
+                className="w-full px-5 py-4 bg-white dark:bg-gray-800/50 rounded-2xl shadow-[0_2px_8px_0_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_0_rgba(0,0,0,0.2)] flex items-center justify-between hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+              >
+                <div className="flex items-center gap-3">
+                  <DoorOpen size={20} className="text-red-500" />
+                  <span className="text-red-500">모임 종료</span>
+                </div>
+                <ArrowRight size={16} className="text-red-300" />
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  if (gathering.status === GATHERING_STATUS.PAYMENT_REQUESTED) {
+                    toast.error('정산이 진행 중이라 나갈 수 없습니다.');
+                    return;
+                  }
+                  setShowLeaveConfirm(true);
+                }}
+                className="w-full px-5 py-4 bg-white dark:bg-gray-800/50 rounded-2xl shadow-[0_2px_8px_0_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_0_rgba(0,0,0,0.2)] flex items-center justify-between hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+              >
+                <div className="flex items-center gap-3">
+                  <LogOut size={20} className="text-red-500" />
+                  <span className="text-red-500">모임 나가기</span>
+                </div>
+                <ArrowRight size={16} className="text-red-300" />
+              </button>
+            )
+          )}
         </div>
       )}
 
@@ -863,6 +898,111 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
           toast.success(count > 1 ? `${count}건의 지출이 등록되었습니다!` : '지출이 등록되었습니다!');
         }}
       />
+
+      {/* 모임 나가기 확인 모달 */}
+      <Modal
+        isOpen={showLeaveConfirm}
+        onClose={() => setShowLeaveConfirm(false)}
+        title="모임 나가기"
+      >
+        <div className="space-y-6">
+          <div className="text-center py-4">
+            <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-rose-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-red-500/25">
+              <LogOut size={36} className="text-white" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+              모임에서 나가시겠습니까?
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400">
+              나가면 이 모임의 지출/정산 내역을<br />
+              더 이상 볼 수 없습니다.
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <Button
+              variant="secondary"
+              fullWidth
+              onClick={() => setShowLeaveConfirm(false)}
+              disabled={loading}
+            >
+              취소
+            </Button>
+            <Button
+              variant="danger"
+              fullWidth
+              onClick={async () => {
+                try {
+                  await leaveGathering(gathering.id);
+                  setShowLeaveConfirm(false);
+                  toast.success('모임에서 나갔습니다.');
+                  navigate('/main');
+                } catch (error) {
+                  const errorCode = error?.code || error?.errorCode;
+                  if (errorCode === 'G012') {
+                    toast.error('정산이 진행 중이라 나갈 수 없습니다.');
+                  } else {
+                    toast.error(error?.message || '모임 나가기에 실패했습니다.');
+                  }
+                  setShowLeaveConfirm(false);
+                }
+              }}
+              loading={loading}
+            >
+              나가기
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* 모임 종료 확인 모달 (방장 전용) */}
+      <Modal
+        isOpen={showCloseConfirm}
+        onClose={() => setShowCloseConfirm(false)}
+        title="모임 종료"
+      >
+        <div className="space-y-6">
+          <div className="text-center py-4">
+            <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-rose-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-red-500/25">
+              <DoorOpen size={36} className="text-white" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+              모임을 종료하시겠습니까?
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400">
+              종료된 모임은 더 이상<br />
+              비용 등록 및 정산이 불가합니다.
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <Button
+              variant="secondary"
+              fullWidth
+              onClick={() => setShowCloseConfirm(false)}
+              disabled={loading}
+            >
+              취소
+            </Button>
+            <Button
+              variant="danger"
+              fullWidth
+              onClick={async () => {
+                try {
+                  await closeGathering(gathering.id);
+                  setShowCloseConfirm(false);
+                  toast.success('모임이 종료되었습니다.');
+                  navigate('/main');
+                } catch (error) {
+                  toast.error(error?.message || '모임 종료에 실패했습니다.');
+                  setShowCloseConfirm(false);
+                }
+              }}
+              loading={loading}
+            >
+              종료하기
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
     </div>
   );

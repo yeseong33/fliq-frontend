@@ -31,5 +31,13 @@ export const gatheringAPI = {
 
   createPaymentRequest: (gatheringId, totalAmount) => {
     return api.post(`/gatherings/${gatheringId}/payment-request?totalAmount=${totalAmount}`);
+  },
+
+  leaveGathering: (gatheringId) => {
+    return api.delete(`/gatherings/${gatheringId}/leave`);
+  },
+
+  closeGathering: (gatheringId) => {
+    return api.post(`/gatherings/${gatheringId}/close`);
   }
 };
