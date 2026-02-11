@@ -45,7 +45,6 @@ const SequentialConfirm = ({ settlements, onClose, onComplete }) => {
 
       // 마지막 항목이면 바로 완료 처리
       if (newProcessedIds.size === totalCount || isLastCard) {
-        toast.success('모든 수령 확인 완료!');
         setIsAnimating(true);
         setTimeout(() => {
           onComplete?.();
@@ -55,7 +54,6 @@ const SequentialConfirm = ({ settlements, onClose, onComplete }) => {
       }
 
       goNext();
-      toast.success('수령 확인!');
     } catch (error) {
       logger.error('Failed to confirm settlement:', error);
       toast.error('처리에 실패했습니다');
@@ -79,7 +77,6 @@ const SequentialConfirm = ({ settlements, onClose, onComplete }) => {
 
       // 마지막 항목이면 바로 완료 처리
       if (newProcessedIds.size === totalCount || isLastCard) {
-        toast.success(isLastCard ? '재요청되었습니다' : '모든 처리 완료!');
         setIsAnimating(true);
         setTimeout(() => {
           onComplete?.();
@@ -89,7 +86,6 @@ const SequentialConfirm = ({ settlements, onClose, onComplete }) => {
       }
 
       goNext();
-      toast.success('재요청되었습니다');
     } catch (error) {
       logger.error('Failed to reject settlement:', error);
       toast.error('처리에 실패했습니다');
@@ -273,19 +269,15 @@ const SequentialConfirm = ({ settlements, onClose, onComplete }) => {
                 <Clock size={18} />
                 <span>송금 대기 중</span>
               </div>
-              <button
-                onClick={canSkip ? handleSkip : handleClose}
-                className="w-full py-2 text-gray-500 dark:text-gray-400 text-sm font-medium flex items-center justify-center gap-1"
-              >
-                {canSkip ? (
-                  <>
-                    건너뛰기
-                    <ChevronRight size={14} />
-                  </>
-                ) : (
-                  '닫기'
-                )}
-              </button>
+              {canSkip && (
+                <button
+                  onClick={handleSkip}
+                  className="w-full py-2 text-gray-500 dark:text-gray-400 text-sm font-medium flex items-center justify-center gap-1"
+                >
+                  건너뛰기
+                  <ChevronRight size={14} />
+                </button>
+              )}
             </>
           )}
         </div>

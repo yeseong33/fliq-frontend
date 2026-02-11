@@ -46,7 +46,6 @@ const SequentialTransfer = ({ settlements, onClose, onComplete }) => {
 
       // 마지막 항목이면 바로 완료 처리
       if (newCompletedIds.size === totalCount || isLastCard) {
-        toast.success('모든 송금 완료!');
         setIsAnimating(true);
         setTimeout(() => {
           onComplete?.();
@@ -61,8 +60,6 @@ const SequentialTransfer = ({ settlements, onClose, onComplete }) => {
         setIsAnimating(false);
         setCurrentIndex(prev => prev + 1);
       }, 500);
-
-      toast.success('송금 완료!');
     } catch (error) {
       logger.error('Failed to complete settlement:', error);
       toast.error('처리에 실패했습니다');
@@ -242,19 +239,15 @@ const SequentialTransfer = ({ settlements, onClose, onComplete }) => {
               <span>{currentSettlement?.amount?.toLocaleString()}원 송금</span>
             </button>
           )}
-          <button
-            onClick={canSkip ? handleSkip : handleClose}
-            className="w-full py-2 text-gray-500 dark:text-gray-400 text-sm font-medium flex items-center justify-center gap-1"
-          >
-            {canSkip ? (
-              <>
-                다음에 할게요
-                <ChevronRight size={14} />
-              </>
-            ) : (
-              '닫기'
-            )}
-          </button>
+          {canSkip && (
+            <button
+              onClick={handleSkip}
+              className="w-full py-2 text-gray-500 dark:text-gray-400 text-sm font-medium flex items-center justify-center gap-1"
+            >
+              다음에 할게요
+              <ChevronRight size={14} />
+            </button>
+          )}
         </div>
       </div>
     </>
