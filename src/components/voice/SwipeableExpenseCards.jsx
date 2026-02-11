@@ -76,6 +76,7 @@ const SwipeableExpenseCards = ({ items, transcript, v, toConfirmData, CATEGORY_L
   }, [handleDragStart]);
 
   const onTouchMove = useCallback((e) => {
+    e.preventDefault();
     const touch = e.touches[0];
     handleDragMove(touch.clientX, touch.clientY);
   }, [handleDragMove]);

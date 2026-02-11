@@ -84,7 +84,7 @@ const VoiceRecordingOverlay = ({ isOpen, voiceState, transcript, result, error, 
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm overflow-hidden" style={{ touchAction: 'none' }}>
       {/* 닫기 버튼 */}
       <button
         onClick={onCancel}
