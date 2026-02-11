@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Building2, ChevronRight, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import logger from '../../utils/logger';
@@ -7,7 +6,6 @@ import { paymentMethodAPI, PAYMENT_PLATFORMS, BANK_CODES } from '../../api/payme
 import { useAuth } from '../../hooks/useAuth';
 
 const SignupAccountStep = ({ onBack }) => {
-  const navigate = useNavigate();
   const { completeSignup } = useAuth();
   const [step, setStep] = useState('intro'); // 'intro' | 'form'
   const [formData, setFormData] = useState({
@@ -39,7 +37,6 @@ const SignupAccountStep = ({ onBack }) => {
       await paymentMethodAPI.create(formData);
       toast.success('계좌가 등록되었습니다!');
       completeSignup();
-      navigate('/main', { replace: true });
     } catch (error) {
       logger.error('Failed to create payment method:', error);
       toast.error(error.message || '계좌 등록에 실패했습니다.');
@@ -50,7 +47,6 @@ const SignupAccountStep = ({ onBack }) => {
 
   const handleSkip = () => {
     completeSignup();
-    navigate('/main', { replace: true });
   };
 
   if (step === 'intro') {

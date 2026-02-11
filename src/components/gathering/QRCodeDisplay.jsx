@@ -52,9 +52,9 @@ const QRCodeDisplay = ({ isOpen, onClose, gathering, onRefresh }) => {
 
   const handleShare = async () => {
     const shareData = {
-      title: `${gathering.title} - Dutch Pay`,
+      title: `${gathering.title} - Fliq`,
       text: `${gathering.title} 모임에 참여하세요!`,
-      url: `${window.location.origin}/join?qr=${encodeURIComponent(gathering.qrCode)}`
+      url: `${window.location.origin}/join?qr=${gathering.qrCode}`
     };
 
     const success = await shareUrl(shareData.url, shareData.title);

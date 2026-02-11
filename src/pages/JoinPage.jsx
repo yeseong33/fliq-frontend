@@ -14,6 +14,7 @@ const JoinPage = () => {
   const [manualCode, setManualCode] = useState('');
   const [showManualInput, setShowManualInput] = useState(false);
   const [cameraError, setCameraError] = useState('');
+  const [autoJoining, setAutoJoining] = useState(!!searchParams.get('qr'));
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const autoJoinAttempted = useRef(false);
@@ -36,11 +37,13 @@ const JoinPage = () => {
           return;
         }
         toast.error(error.message);
+        setAutoJoining(false);
       }
     })();
   }, [searchParams, joinGathering, navigate]);
 
   useEffect(() => {
+    if (autoJoining) return;
     if (!showManualInput) {
       startCamera();
     }
@@ -48,7 +51,7 @@ const JoinPage = () => {
     return () => {
       stopCamera();
     };
-  }, [showManualInput]);
+  }, [showManualInput, autoJoining]);
 
   const startCamera = async () => {
     try {
@@ -103,6 +106,19 @@ const JoinPage = () => {
     e.preventDefault();
     handleJoinWithCode(manualCode);
   };
+
+  if (autoJoining) {
+    return (
+      <div className="page">
+        <div className="page-content flex flex-col items-center justify-center min-h-[60vh]">
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4" />
+          <p className="text-lg font-medium text-gray-900 dark:text-white">
+            모임에 참여하는 중...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="page">

@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import jsQR from 'jsqr';
 import { Camera, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import logger from '../../utils/logger';
@@ -14,14 +15,18 @@ const QRCodeScanner = ({ isOpen, onClose, onSuccess, onPaymentMethodRequired }) 
   const [showManualInput, setShowManualInput] = useState(false);
   const [cameraError, setCameraError] = useState('');
   const videoRef = useRef(null);
+  const canvasRef = useRef(null);
   const streamRef = useRef(null);
+  const animationRef = useRef(null);
+  const isProcessingRef = useRef(false);
 
   useEffect(() => {
     if (isOpen && !showManualInput) {
       startCamera();
     }
-    
+
     return () => {
+      stopScanning();
       stopCamera();
     };
   }, [isOpen, showManualInput]);
@@ -29,16 +34,20 @@ const QRCodeScanner = ({ isOpen, onClose, onSuccess, onPaymentMethodRequired }) 
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { 
+        video: {
           facingMode: 'environment',
           width: { ideal: 1280 },
           height: { ideal: 720 }
         }
       });
-      
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
+        videoRef.current.onloadedmetadata = () => {
+          videoRef.current.play();
+          startScanning();
+        };
       }
       setCameraError('');
     } catch (error) {
@@ -55,9 +64,52 @@ const QRCodeScanner = ({ isOpen, onClose, onSuccess, onPaymentMethodRequired }) 
     }
   };
 
+  const startScanning = useCallback(() => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
+
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+    const scan = () => {
+      if (!video.videoWidth || !video.videoHeight || isProcessingRef.current) {
+        animationRef.current = requestAnimationFrame(scan);
+        return;
+      }
+
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, imageData.width, imageData.height, {
+        inversionAttempts: 'dontInvert',
+      });
+
+      if (code && code.data) {
+        isProcessingRef.current = true;
+        stopScanning();
+        handleJoinWithCode(code.data);
+        return;
+      }
+
+      animationRef.current = requestAnimationFrame(scan);
+    };
+
+    animationRef.current = requestAnimationFrame(scan);
+  }, []);
+
+  const stopScanning = () => {
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
+    }
+  };
+
   const handleJoinWithCode = async (qrCode) => {
     if (!qrCode.trim()) {
       toast.error('QR 코드를 입력해주세요.');
+      isProcessingRef.current = false;
       return;
     }
 
@@ -67,13 +119,17 @@ const QRCodeScanner = ({ isOpen, onClose, onSuccess, onPaymentMethodRequired }) 
       onSuccess(gathering);
       handleClose();
     } catch (error) {
-      // 계좌 미등록 에러인 경우
       if (error.code === GATHERING_ERROR_CODES.PAYMENT_METHOD_REQUIRED) {
         handleClose();
         onPaymentMethodRequired?.();
         return;
       }
       toast.error(error.message);
+      // 실패 시 다시 스캔 재개
+      isProcessingRef.current = false;
+      if (!showManualInput && streamRef.current) {
+        startScanning();
+      }
     }
   };
 
@@ -83,10 +139,12 @@ const QRCodeScanner = ({ isOpen, onClose, onSuccess, onPaymentMethodRequired }) 
   };
 
   const handleClose = () => {
+    stopScanning();
     stopCamera();
     setManualCode('');
     setShowManualInput(false);
     setCameraError('');
+    isProcessingRef.current = false;
     onClose();
   };
 
@@ -95,6 +153,7 @@ const QRCodeScanner = ({ isOpen, onClose, onSuccess, onPaymentMethodRequired }) 
       setShowManualInput(false);
       startCamera();
     } else {
+      stopScanning();
       stopCamera();
       setShowManualInput(true);
     }
@@ -103,6 +162,9 @@ const QRCodeScanner = ({ isOpen, onClose, onSuccess, onPaymentMethodRequired }) 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="모임 참여">
       <div className="space-y-4">
+        {/* QR 디코딩용 숨김 캔버스 */}
+        <canvas ref={canvasRef} style={{ display: 'none' }} />
+
         {!showManualInput ? (
           <div className="space-y-4">
             <div className="relative bg-black rounded-lg overflow-hidden" style={{ aspectRatio: '4/3' }}>
@@ -122,7 +184,7 @@ const QRCodeScanner = ({ isOpen, onClose, onSuccess, onPaymentMethodRequired }) 
                   className="w-full h-full object-cover"
                 />
               )}
-              
+
               {/* QR 스캔 가이드 */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="w-48 h-48 border-2 border-white rounded-lg relative">
@@ -133,7 +195,7 @@ const QRCodeScanner = ({ isOpen, onClose, onSuccess, onPaymentMethodRequired }) 
                 </div>
               </div>
             </div>
-            
+
             <p className="text-center text-sm text-gray-600 dark:text-gray-300">
               QR 코드를 프레임 안에 맞춰주세요
             </p>
@@ -148,10 +210,10 @@ const QRCodeScanner = ({ isOpen, onClose, onSuccess, onPaymentMethodRequired }) 
               placeholder="QR 코드를 입력하세요"
               required
             />
-            
-            <Button 
-              type="submit" 
-              fullWidth 
+
+            <Button
+              type="submit"
+              fullWidth
               loading={loading}
               className="mt-4"
             >
