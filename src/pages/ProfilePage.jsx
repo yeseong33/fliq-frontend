@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Mail, LogOut, ChevronRight, Sun, Moon, CreditCard, UserX } from 'lucide-react';
+import { User, Mail, LogOut, ChevronRight, Sun, Moon, CreditCard, UserX, FileText } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
@@ -165,7 +165,7 @@ const ProfilePage = () => {
           <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">설정</h3>
           <button
             onClick={toggleTheme}
-            className="w-full flex items-center justify-between p-4 -mx-2 -my-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-2xl transition-all duration-200"
+            className="w-full flex items-center justify-between p-4 -mx-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-2xl transition-all duration-200"
           >
             <div className="flex items-center gap-3">
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
@@ -184,6 +184,22 @@ const ProfilePage = () => {
             <div className={`w-12 h-7 rounded-full transition-colors duration-300 ${isDark ? 'bg-blue-500' : 'bg-gray-300'}`}>
               <div className={`w-6 h-6 bg-white rounded-full shadow transform transition-transform duration-300 mt-0.5 ${isDark ? 'translate-x-5 ml-0.5' : 'translate-x-0.5'}`} />
             </div>
+          </button>
+
+          <button
+            onClick={() => navigate('/consent-manage')}
+            className="w-full flex items-center justify-between p-4 -mx-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-2xl transition-all duration-200"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-violet-500 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/25">
+                <FileText size={20} className="text-white" />
+              </div>
+              <div className="text-left">
+                <span className="font-medium text-gray-900 dark:text-white">약관 및 동의</span>
+                <p className="text-sm text-gray-500 dark:text-gray-400">약관 동의 현황 관리</p>
+              </div>
+            </div>
+            <ChevronRight size={20} className="text-gray-400" />
           </button>
         </div>
 

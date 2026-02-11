@@ -1,6 +1,7 @@
 import React from 'react';
 import LoginForm from '../components/auth/LoginForm';
 import SignupForm from '../components/auth/SignupForm';
+import ConsentForm from '../components/auth/ConsentForm';
 import OTPVerification from '../components/auth/OTPVerification';
 import SignupAccountStep from '../components/auth/SignupAccountStep';
 import PasskeyRegistration from '../components/auth/PasskeyRegistration';
@@ -49,6 +50,9 @@ const AuthPage = () => {
         );
 
       // 회원가입 플로우
+      case AUTH_FLOW.SIGNUP_CONSENT:
+        return <ConsentForm onSwitchToLogin={handleSwitchToLogin} />;
+
       case AUTH_FLOW.SIGNUP_EMAIL:
         return <SignupForm onSwitchToLogin={handleSwitchToLogin} />;
 

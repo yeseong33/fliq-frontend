@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { authService } from '../services/authService';
+import { consentAPI } from '../api/consent';
 import { STORAGE_KEYS, AUTH_FLOW } from '../utils/constants';
 
 export const useAuthStore = create((set, get) => ({
@@ -15,15 +16,23 @@ export const useAuthStore = create((set, get) => ({
     email: null,
     name: null,
     passkeyOptions: null,
+    consents: null,
   },
   error: null,
 
   // WebAuthn 지원 여부
   webAuthnSupported: false,
 
+  // 약관 동의 확인 (기존 사용자용)
+  consentChecked: false,
+  needsConsent: false,
+
   // ==================== 초기화 ====================
 
   initialize: async () => {
+    // 이미 초기화 완료된 경우 스킵 (불필요한 재파싱 및 리렌더 방지)
+    if (!get().initializing) return;
+
     try {
       const token = sessionStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
       const storedUser = authService.getStoredUser();
@@ -42,11 +51,27 @@ export const useAuthStore = create((set, get) => ({
         return;
       }
 
+      // 필수 약관 동의 여부 확인
+      let consentChecked = false;
+      let needsConsent = false;
+      try {
+        const res = await consentAPI.checkRequired();
+        const data = res.data?.data || res.data;
+        consentChecked = data.allRequiredAgreed === true;
+        needsConsent = !consentChecked;
+      } catch {
+        // 약관 API 실패 시 일단 통과 (서버 미구현 등)
+        consentChecked = true;
+        needsConsent = false;
+      }
+
       set({
         isAuthenticated: true,
         user: storedUser,
         initializing: false,
         webAuthnSupported,
+        consentChecked,
+        needsConsent,
       });
     } catch (error) {
       sessionStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
@@ -115,18 +140,29 @@ export const useAuthStore = create((set, get) => ({
    * Passkey 등록 완료 → 계좌 등록 화면으로 (선택)
    */
   signupPasskeyFinish: async () => {
-    const { passkeyOptions } = get().flowData;
+    const { passkeyOptions, consents } = get().flowData;
     set({ loading: true, error: null });
 
     try {
       const { user } = await authService.signupPasskeyFinish(passkeyOptions);
+
+      // 인증 완료 후 약관 동의 전송
+      if (consents) {
+        try {
+          await consentAPI.saveAll(consents);
+        } catch {
+          // 약관 저장 실패 시에도 회원가입은 완료 처리
+        }
+      }
 
       set({
         loading: false,
         isAuthenticated: true,
         user,
         authFlow: AUTH_FLOW.SIGNUP_ACCOUNT, // 계좌 등록 화면으로
-        flowData: { email: null, name: null, passkeyOptions: null },
+        flowData: { email: null, name: null, passkeyOptions: null, consents: null },
+        consentChecked: true,
+        needsConsent: false,
       });
 
       return { success: true };
@@ -181,12 +217,27 @@ export const useAuthStore = create((set, get) => ({
     try {
       const { user } = await authService.loginFinish(passkeyOptions);
 
+      // 로그인 시 필수 약관 동의 여부 확인
+      let consentChecked = false;
+      let needsConsent = false;
+      try {
+        const res = await consentAPI.checkRequired();
+        const data = res.data?.data || res.data;
+        consentChecked = data.allRequiredAgreed === true;
+        needsConsent = !consentChecked;
+      } catch {
+        consentChecked = true;
+        needsConsent = false;
+      }
+
       set({
         loading: false,
         isAuthenticated: true,
         user,
         authFlow: AUTH_FLOW.IDLE,
-        flowData: { email: null, name: null, passkeyOptions: null },
+        flowData: { email: null, name: null, passkeyOptions: null, consents: null },
+        consentChecked,
+        needsConsent,
       });
 
       return { success: true };
@@ -262,7 +313,7 @@ export const useAuthStore = create((set, get) => ({
         isAuthenticated: true,
         user,
         authFlow: AUTH_FLOW.IDLE,
-        flowData: { email: null, name: null, passkeyOptions: null },
+        flowData: { email: null, name: null, passkeyOptions: null, consents: null },
       });
 
       return { success: true };
@@ -306,8 +357,8 @@ export const useAuthStore = create((set, get) => ({
 
   goToSignup: () => {
     set({
-      authFlow: AUTH_FLOW.SIGNUP_EMAIL,
-      flowData: { email: null, name: null, passkeyOptions: null },
+      authFlow: AUTH_FLOW.SIGNUP_CONSENT,
+      flowData: { email: null, name: null, passkeyOptions: null, consents: null },
       error: null,
     });
   },
@@ -315,7 +366,7 @@ export const useAuthStore = create((set, get) => ({
   goToLogin: () => {
     set({
       authFlow: AUTH_FLOW.LOGIN_EMAIL,
-      flowData: { email: null, name: null, passkeyOptions: null },
+      flowData: { email: null, name: null, passkeyOptions: null, consents: null },
       error: null,
     });
   },
@@ -323,9 +374,27 @@ export const useAuthStore = create((set, get) => ({
   goToRecovery: () => {
     set({
       authFlow: AUTH_FLOW.RECOVERY_EMAIL,
-      flowData: { email: null, name: null, passkeyOptions: null },
+      flowData: { email: null, name: null, passkeyOptions: null, consents: null },
       error: null,
     });
+  },
+
+  /**
+   * 약관 동의 저장 → 이메일 입력으로 전환 (회원가입 플로우)
+   */
+  acceptConsents: (consents) => {
+    set({
+      authFlow: AUTH_FLOW.SIGNUP_EMAIL,
+      flowData: { ...get().flowData, consents },
+      error: null,
+    });
+  },
+
+  /**
+   * 기존 사용자 약관 동의 확인 완료
+   */
+  setConsentChecked: (checked) => {
+    set({ consentChecked: checked, needsConsent: !checked });
   },
 
   resetFlow: () => {
@@ -333,7 +402,7 @@ export const useAuthStore = create((set, get) => ({
     authService.clearRecoverySession();
     set({
       authFlow: AUTH_FLOW.IDLE,
-      flowData: { email: null, name: null, passkeyOptions: null },
+      flowData: { email: null, name: null, passkeyOptions: null, consents: null },
       error: null,
     });
   },
@@ -346,8 +415,10 @@ export const useAuthStore = create((set, get) => ({
       user: null,
       isAuthenticated: false,
       authFlow: AUTH_FLOW.IDLE,
-      flowData: { email: null, name: null, passkeyOptions: null },
+      flowData: { email: null, name: null, passkeyOptions: null, consents: null },
       error: null,
+      consentChecked: false,
+      needsConsent: false,
     });
   },
 

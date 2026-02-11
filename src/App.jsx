@@ -20,6 +20,8 @@ import CreateExpensePage from './pages/CreateExpensePage';
 import QRCodePage from './pages/QRCodePage';
 import ExpenseListPage from './pages/ExpenseListPage';
 import SettlementListPage from './pages/SettlementListPage';
+import ConsentRequiredPage from './pages/ConsentRequiredPage';
+import ConsentManagePage from './pages/ConsentManagePage';
 
 // returnUrl 검증: Open Redirect 방지
 const isSafeReturnUrl = (url) =>
@@ -44,7 +46,7 @@ const RedirectFromAuth = () => {
 };
 
 function App() {
-  const { user, authFlow, initializing, initialize, needsOTPVerification, pendingCredentials } = useAuthStore();
+  const { user, authFlow, initializing, initialize, needsOTPVerification, pendingCredentials, consentChecked, needsConsent } = useAuthStore();
   const location = useLocation();
 
   // 앱 시작 시 인증 상태 초기화
@@ -63,6 +65,9 @@ function App() {
 
   // 회원가입 계좌 등록 단계에서는 인증 페이지 유지
   const isSignupAccountStep = authFlow === AUTH_FLOW.SIGNUP_ACCOUNT;
+
+  // 기존 사용자 필수 약관 미동의 시 동의 페이지 표시
+  const showConsentRequired = user && !consentChecked && needsConsent && !isSignupAccountStep;
 
   // OTP 인증이 필요하고 현재 인증 페이지가 아닐 때
   if (needsOTPVerification && location.pathname !== '/auth') {
@@ -112,6 +117,13 @@ function App() {
           },
         }}
       />
+      {/* 기존 사용자 필수 약관 미동의 시 동의 페이지 */}
+      {showConsentRequired ? (
+        <main className="app-content bg-white dark:bg-gray-900">
+          <ConsentRequiredPage />
+        </main>
+      ) : (
+      <>
       {/* 스크롤 가능한 콘텐츠 영역 */}
       <main className="app-content bg-white dark:bg-gray-900">
         <PageTransition>
@@ -168,6 +180,10 @@ function App() {
               path="/payment-methods/add"
               element={user ? <AddPaymentMethodPage /> : <RedirectToAuth />}
             />
+            <Route
+              path="/consent-manage"
+              element={user ? <ConsentManagePage /> : <RedirectToAuth />}
+            />
             <Route path="/" element={<Navigate to={user ? "/main" : "/auth"} replace />} />
             <Route path="*" element={<Navigate to={user ? "/main" : "/auth"} replace />} />
           </Routes>
@@ -175,6 +191,8 @@ function App() {
       </main>
       {/* 바텀 네비게이션 - 스크롤 영역 밖 */}
       <BottomNav />
+      </>
+      )}
     </GoogleReCaptchaProvider>
     </ErrorBoundary>
   );

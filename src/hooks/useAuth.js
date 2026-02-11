@@ -42,6 +42,12 @@ export const useAuth = () => {
     goToRecovery,
     resetFlow,
 
+    // 약관 동의
+    acceptConsents,
+    setConsentChecked,
+    consentChecked,
+    needsConsent,
+
     // 로그아웃
     logout,
 
@@ -90,6 +96,12 @@ export const useAuth = () => {
     goToLogin,
     goToRecovery,
     resetFlow,
+
+    // 약관 동의
+    acceptConsents,
+    setConsentChecked,
+    consentChecked,
+    needsConsent,
 
     // 로그아웃
     logout,

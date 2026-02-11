@@ -9,6 +9,7 @@ export const STORAGE_KEYS = {
 // 인증 플로우 상태
 export const AUTH_FLOW = {
   IDLE: 'IDLE',
+  SIGNUP_CONSENT: 'SIGNUP_CONSENT',
   SIGNUP_EMAIL: 'SIGNUP_EMAIL',
   SIGNUP_OTP: 'SIGNUP_OTP',
   SIGNUP_ACCOUNT: 'SIGNUP_ACCOUNT', // 계좌 등록 (선택)
@@ -55,6 +56,15 @@ export const RECAPTCHA = {
     V3: 'v3',
   },
 };
+
+// 약관 동의 타입
+export const CONSENT_TYPES = [
+  { type: 'TERMS_OF_SERVICE', label: '서비스 이용약관', required: true },
+  { type: 'PRIVACY_POLICY', label: '개인정보 처리방침', required: true },
+  { type: 'E_FINANCE_TERMS', label: '전자금융거래 이용약관', required: true },
+  { type: 'MARKETING_CONSENT', label: '마케팅 수신 동의', required: false },
+  { type: 'OPTIONAL_PERSONAL_INFO', label: '선택적 개인정보 수집 동의', required: false },
+];
 
 // reCAPTCHA v2 필요 에러 코드
 export const ERROR_CODES = {
