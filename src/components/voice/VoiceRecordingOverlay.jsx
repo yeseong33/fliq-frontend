@@ -26,7 +26,7 @@ const MAX_AMOUNT = 100_000_000;
 const MAX_DESCRIPTION_LENGTH = 200;
 const MAX_LOCATION_LENGTH = 100;
 
-const VoiceRecordingOverlay = ({ isOpen, voiceState, transcript, result, error, savedExpenseId, onStop, onConfirm, onCancel, onClose }) => {
+const VoiceRecordingOverlay = ({ isOpen, voiceState, transcript, partialTranscript, result, error, savedExpenseId, onStop, onConfirm, onCancel, onClose }) => {
   const [elapsed, setElapsed] = useState(0);
   const timerRef = useRef(null);
 
@@ -123,6 +123,11 @@ const VoiceRecordingOverlay = ({ isOpen, voiceState, transcript, result, error, 
             </div>
           </button>
           <p className="text-white text-lg font-medium">듣고 있어요...</p>
+          {partialTranscript && (
+            <div className="bg-white/10 rounded-2xl p-3 w-full max-w-xs">
+              <p className="text-white/80 text-sm text-center">{partialTranscript}</p>
+            </div>
+          )}
           <p className="text-white/40 text-xs">탭하여 완료</p>
         </div>
       )}

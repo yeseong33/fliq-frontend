@@ -8,11 +8,13 @@ export const useVoiceRecording = () => {
   const {
     state,
     transcript,
+    partialTranscript,
     result,
     error,
     savedExpenseId,
     setState,
     setTranscript,
+    setPartialTranscript,
     setResult,
     setError,
     setSavedExpenseId,
@@ -32,12 +34,14 @@ export const useVoiceRecording = () => {
 
         // 이벤트 리스너 등록
         socket.off('state');
+        socket.off('transcript:partial');
         socket.off('transcript:final');
         socket.off('result');
         socket.off('saved');
         socket.off('error');
 
         socket.on('state', ({ state: s }) => setState(s));
+        socket.on('transcript:partial', ({ text }) => setPartialTranscript(text));
         socket.on('transcript:final', ({ text }) => setTranscript(text));
         socket.on('result', (data) => setResult(data));
         socket.on('saved', ({ expenseId }) => {
@@ -93,7 +97,7 @@ export const useVoiceRecording = () => {
         realtimeService.disconnect();
       }
     },
-    [reset, setState, setTranscript, setResult, setError, setSavedExpenseId],
+    [reset, setState, setTranscript, setPartialTranscript, setResult, setError, setSavedExpenseId],
   );
 
   const stopRecording = useCallback(async () => {
@@ -136,6 +140,7 @@ export const useVoiceRecording = () => {
   return {
     state,
     transcript,
+    partialTranscript,
     result,
     error,
     savedExpenseId,

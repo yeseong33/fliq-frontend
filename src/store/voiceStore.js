@@ -11,12 +11,14 @@ export const VOICE_STATE = {
 export const useVoiceStore = create((set) => ({
   state: VOICE_STATE.IDLE,
   transcript: '',
+  partialTranscript: '',
   result: null,
   error: null,
   savedExpenseId: null,
 
   setState: (state) => set({ state }),
-  setTranscript: (transcript) => set({ transcript }),
+  setTranscript: (transcript) => set({ transcript, partialTranscript: '' }),
+  setPartialTranscript: (text) => set({ partialTranscript: text }),
   setResult: (result) => set({ result }),
   setError: (error) => set({ error, state: VOICE_STATE.IDLE }),
   setSavedExpenseId: (savedExpenseId) => set({ savedExpenseId, state: VOICE_STATE.CONFIRMED }),
@@ -25,6 +27,7 @@ export const useVoiceStore = create((set) => ({
     set({
       state: VOICE_STATE.IDLE,
       transcript: '',
+      partialTranscript: '',
       result: null,
       error: null,
       savedExpenseId: null,

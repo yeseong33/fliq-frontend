@@ -889,6 +889,7 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
         isOpen={showVoiceOverlay}
         voiceState={voice.state}
         transcript={voice.transcript}
+        partialTranscript={voice.partialTranscript}
         result={voice.result}
         error={voice.error}
         savedExpenseId={voice.savedExpenseId}
