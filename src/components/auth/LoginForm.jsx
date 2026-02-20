@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import toast from '../../utils/toast';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Key, AlertTriangle } from 'lucide-react';
@@ -9,8 +9,9 @@ const LoginForm = ({ onSwitchToSignup, onSwitchToRecovery }) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
+  const autoTriggered = useRef(false);
 
-  const handleLogin = async () => {
+  const handleLogin = useCallback(async () => {
     if (loading) return;
 
     setLoading(true);
@@ -41,7 +42,15 @@ const LoginForm = ({ onSwitchToSignup, onSwitchToRecovery }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [loading, loginStart, loginFinish, resetFlow, navigate, searchParams]);
+
+  // 페이지 진입 시 자동으로 패스키 인증 시작
+  useEffect(() => {
+    if (webAuthnSupported && !autoTriggered.current) {
+      autoTriggered.current = true;
+      handleLogin();
+    }
+  }, [webAuthnSupported, handleLogin]);
 
   if (!webAuthnSupported) {
     return (
