@@ -72,10 +72,13 @@ export const authService = {
         attestationObject,
       });
 
-      const { accessToken, user } = response.data.data;
+      const { accessToken, refreshToken, user } = response.data.data;
 
       // 토큰 저장 및 signupToken 삭제
       sessionStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, `Bearer ${accessToken}`);
+      if (refreshToken) {
+        sessionStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
+      }
       this.setStoredUser(user);
       sessionStorage.removeItem(STORAGE_KEYS.SIGNUP_TOKEN);
 
@@ -134,10 +137,13 @@ export const authService = {
         userHandle,
       });
 
-      const { accessToken, user } = response.data.data;
+      const { accessToken, refreshToken, user } = response.data.data;
 
       // 토큰 저장
       sessionStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, `Bearer ${accessToken}`);
+      if (refreshToken) {
+        sessionStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
+      }
       this.setStoredUser(user);
 
       return { accessToken, user };
@@ -215,10 +221,13 @@ export const authService = {
         attestationObject,
       });
 
-      const { accessToken, user } = response.data.data;
+      const { accessToken, refreshToken, user } = response.data.data;
 
       // 토큰 저장 및 recoveryToken 삭제
       sessionStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, `Bearer ${accessToken}`);
+      if (refreshToken) {
+        sessionStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
+      }
       this.setStoredUser(user);
       sessionStorage.removeItem(STORAGE_KEYS.RECOVERY_TOKEN);
 
@@ -267,8 +276,31 @@ export const authService = {
 
   // ==================== 기타 유틸리티 ====================
 
-  logout() {
+  async logout() {
+    const refreshToken = sessionStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+
+    // 서버에서 Refresh Token 폐기 (실패해도 로컬 정리 진행)
+    if (refreshToken) {
+      try {
+        await authAPI.logout({ refreshToken });
+      } catch {
+        // 네트워크 오류 등 무시
+      }
+    }
+
     sessionStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+    sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+    sessionStorage.removeItem(STORAGE_KEYS.USER);
+    sessionStorage.removeItem(STORAGE_KEYS.SIGNUP_TOKEN);
+    sessionStorage.removeItem(STORAGE_KEYS.RECOVERY_TOKEN);
+  },
+
+  /**
+   * 강제 로그아웃 (401 refresh 실패 시, API 호출 없이 로컬만 정리)
+   */
+  forceLogout() {
+    sessionStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+    sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
     sessionStorage.removeItem(STORAGE_KEYS.USER);
     sessionStorage.removeItem(STORAGE_KEYS.SIGNUP_TOKEN);
     sessionStorage.removeItem(STORAGE_KEYS.RECOVERY_TOKEN);

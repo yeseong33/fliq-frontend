@@ -5,8 +5,8 @@ const AlertModal = ({ isOpen, onClose, message }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div 
+    <div className="fixed inset-0 z-50 flex items-center justify-center" role="alertdialog" aria-modal="true" aria-label={message}>
+      <div
         className="absolute inset-0 bg-black bg-opacity-50"
         onClick={onClose}
       />

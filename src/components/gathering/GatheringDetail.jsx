@@ -448,6 +448,7 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
               setUp();
               navigate(`/gathering/${gathering.id}/qr`);
             }}
+            aria-label="QR 코드 보기"
             className="p-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
           >
             <QrCode size={20} />
@@ -554,8 +555,8 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
               )}
             </div>
             {expensesLoading ? (
-              <div className="flex justify-center py-4 text-gray-400 dark:text-gray-500">
-                <span className="loading-dots">
+              <div className="flex justify-center py-4 text-gray-400 dark:text-gray-500" role="status" aria-label="지출 내역 로딩 중">
+                <span className="loading-dots" aria-hidden="true">
                   <span></span>
                   <span></span>
                   <span></span>
@@ -588,6 +589,7 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
                       setUp();
                       navigate(`/gathering/${gathering.id}/expenses`);
                     }}
+                    aria-label="지출 더보기"
                     className="w-full flex justify-center py-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                   >
                     <ChevronDown size={20} />
@@ -676,7 +678,7 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
                 </div>
               </div>
               {calculatingSettlement ? (
-                <span className="loading-dots"><span></span><span></span><span></span></span>
+                <span className="loading-dots" aria-hidden="true"><span></span><span></span><span></span></span>
               ) : (
                 <ArrowRight size={16} className="text-white/60" />
               )}
@@ -688,8 +690,8 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
             <h3 className="font-semibold mb-4 text-gray-900 dark:text-white">정산 현황</h3>
 
             {settlementsLoading ? (
-              <div className="flex justify-center py-4 text-gray-400 dark:text-gray-500">
-                <span className="loading-dots">
+              <div className="flex justify-center py-4 text-gray-400 dark:text-gray-500" role="status" aria-label="정산 내역 로딩 중">
+                <span className="loading-dots" aria-hidden="true">
                   <span></span>
                   <span></span>
                   <span></span>
@@ -712,6 +714,7 @@ const GatheringDetail = ({ gathering, onUpdate }) => {
                       setUp();
                       navigate(`/gathering/${gathering.id}/settlements`);
                     }}
+                    aria-label="정산 더보기"
                     className="w-full flex justify-center py-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                   >
                     <ChevronDown size={20} />
@@ -1204,7 +1207,7 @@ const SettlementBottomBar = ({ settlements, user, onTransfer, onConfirm, transfe
             className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white font-bold rounded-2xl shadow-lg shadow-green-500/30 transition-colors"
           >
             {isProcessing ? (
-              <span className="loading-dots"><span></span><span></span><span></span></span>
+              <span className="loading-dots" aria-hidden="true"><span></span><span></span><span></span></span>
             ) : (
               <>
                 <Check size={18} />
@@ -1254,7 +1257,7 @@ const SettlementBottomBar = ({ settlements, user, onTransfer, onConfirm, transfe
               className="w-full flex items-center justify-center gap-2 py-3.5 px-4 bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white font-bold rounded-2xl shadow-lg shadow-green-500/30 transition-colors"
             >
               {isProcessing ? (
-                <span className="loading-dots"><span></span><span></span><span></span></span>
+                <span className="loading-dots" aria-hidden="true"><span></span><span></span><span></span></span>
               ) : (
                 <>
                   <Check size={18} />
@@ -1528,6 +1531,7 @@ const TimeEditModal = ({ isOpen, onClose, startAt, endAt, onSave, loading }) => 
           <button
             type="button"
             onClick={handlePrevMonth}
+            aria-label="이전 달"
             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
             <ChevronLeft size={20} className="text-gray-600 dark:text-gray-300" />
@@ -1538,6 +1542,7 @@ const TimeEditModal = ({ isOpen, onClose, startAt, endAt, onSave, loading }) => 
           <button
             type="button"
             onClick={handleNextMonth}
+            aria-label="다음 달"
             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
             <ChevronRight size={20} className="text-gray-600 dark:text-gray-300" />

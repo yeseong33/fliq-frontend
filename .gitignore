@@ -107,3 +107,6 @@ ehthumbs.db
 *~
 
 .claude
+
+# Security audit documents
+SECURITY_FIXES.md

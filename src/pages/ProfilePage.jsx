@@ -30,8 +30,8 @@ const ProfilePage = () => {
 
   const { state: pullState, pullDistance } = usePullToRefresh(handleRefresh);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate('/auth');
   };
 
@@ -40,7 +40,7 @@ const ProfilePage = () => {
     try {
       await userAPI.deleteMe();
       toast.success('회원 탈퇴가 완료되었습니다.');
-      logout();
+      await logout();
       navigate('/auth', { replace: true });
     } catch (error) {
       toast.error(error.message || '회원 탈퇴에 실패했습니다.');

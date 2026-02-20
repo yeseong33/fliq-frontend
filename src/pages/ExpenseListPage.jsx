@@ -83,6 +83,7 @@ const ExpenseListPage = () => {
         <div className="flex items-center justify-between px-4 py-3">
           <button
             onClick={handleBack}
+            aria-label="뒤로 가기"
             className="p-2 -ml-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
           >
             <ChevronLeft size={24} />
@@ -96,8 +97,8 @@ const ExpenseListPage = () => {
 
       <div className="page-content">
         {loading ? (
-          <div className="flex justify-center py-12 text-gray-400 dark:text-gray-500">
-            <span className="loading-dots">
+          <div className="flex justify-center py-12 text-gray-400 dark:text-gray-500" role="status" aria-label="지출 내역 로딩 중">
+            <span className="loading-dots" aria-hidden="true">
               <span></span>
               <span></span>
               <span></span>

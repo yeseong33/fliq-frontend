@@ -14,6 +14,8 @@ const PullToRefresh = ({ state, pullDistance, children }) => {
     <div className="relative">
       {/* 인디케이터 */}
       <div
+        role={isRefreshing ? 'status' : undefined}
+        aria-label={isRefreshing ? '새로고침 중' : undefined}
         className="flex items-center justify-center overflow-hidden"
         style={{
           height: isActive ? (isRefreshing ? 52 : isCompleting ? 0 : pullDistance * 0.55) : 0,

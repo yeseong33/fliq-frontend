@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 import { useAuthStore } from './store/authStore';
+import { setUnauthorizedHandler } from './api/config';
 import { RECAPTCHA, AUTH_FLOW } from './utils/constants';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import PageTransition from './components/common/PageTransition';
@@ -54,10 +55,17 @@ function App() {
     initialize();
   }, [initialize]);
 
+  // 401 응답 시 React 상태를 통한 강제 로그아웃 (API 호출 없이 상태만 정리)
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      useAuthStore.getState().forceLogout();
+    });
+  }, []);
+
   // 초기화 중일 때 스켈레톤 표시
   if (initializing) {
     return (
-      <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center" role="status" aria-label="앱 로딩 중">
         <div className="w-16 h-16 rounded-2xl bg-gray-200 dark:bg-gray-700 " />
       </div>
     );
@@ -108,12 +116,16 @@ function App() {
             theme: {
               primary: '#4aed88',
             },
+            role: 'status',
+            ariaProps: { 'aria-live': 'polite' },
           },
           error: {
             duration: 3000,
             theme: {
               primary: '#ff4b4b',
             },
+            role: 'alert',
+            ariaProps: { 'aria-live': 'assertive' },
           },
         }}
       />

@@ -167,8 +167,9 @@ const QRCodeDisplay = ({ isOpen, onClose, gathering, onRefresh }) => {
             <code className="flex-1 text-xs bg-white p-2 rounded border">
               {gathering?.qrCode}
             </code>
-            <button 
+            <button
               onClick={handleCopyQR}
+              aria-label="코드 복사"
               className="p-2 hover:bg-gray-200 rounded"
             >
               <Copy size={14} />

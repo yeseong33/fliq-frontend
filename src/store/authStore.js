@@ -40,6 +40,7 @@ export const useAuthStore = create((set, get) => ({
 
       if (!token || !storedUser) {
         sessionStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+        sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
         sessionStorage.removeItem(STORAGE_KEYS.USER);
 
         set({
@@ -76,6 +77,7 @@ export const useAuthStore = create((set, get) => ({
       });
     } catch (error) {
       sessionStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+      sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
       sessionStorage.removeItem(STORAGE_KEYS.USER);
 
       set({
@@ -412,8 +414,24 @@ export const useAuthStore = create((set, get) => ({
 
   // ==================== 로그아웃 ====================
 
-  logout: () => {
-    authService.logout();
+  logout: async () => {
+    await authService.logout();
+    set({
+      user: null,
+      isAuthenticated: false,
+      authFlow: AUTH_FLOW.IDLE,
+      flowData: { email: null, name: null, passkeyOptions: null, consents: null },
+      error: null,
+      consentChecked: false,
+      needsConsent: false,
+    });
+  },
+
+  /**
+   * 강제 로그아웃 (401 refresh 실패 시, API 호출 없이 상태만 정리)
+   */
+  forceLogout: () => {
+    authService.forceLogout();
     set({
       user: null,
       isAuthenticated: false,
