@@ -84,11 +84,6 @@ api.interceptors.request.use(
       config.headers.Authorization = bearerToken;
     }
 
-    // CRITICAL #3: 프로덕션 Origin 검증용 커스텀 헤더
-    if (import.meta.env.PROD) {
-      config.headers['X-Origin'] = window.location.origin;
-    }
-
     await addArtificialDelay();
     return config;
   },
