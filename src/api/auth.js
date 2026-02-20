@@ -90,21 +90,19 @@ export const authAPI = {
   // ==================== 토큰 갱신 ====================
 
   /**
-   * Refresh Token으로 Access Token 갱신 (토큰 rotation)
-   * @param {{ refreshToken: string }} data
-   * @returns {{ accessToken: string, refreshToken: string }}
+   * Refresh Token으로 Access Token 갱신 (쿠키 자동 전송, body 없음)
+   * @returns {{ accessToken: string }}
    */
-  refresh: (data) => {
-    return api.post('/auth/refresh', data);
+  refresh: () => {
+    return api.post('/auth/refresh');
   },
 
   // ==================== 로그아웃 ====================
 
   /**
-   * 로그아웃 - 서버에서 Refresh Token 폐기
-   * @param {{ refreshToken?: string }} data
+   * 로그아웃 - 서버에서 Refresh Token 쿠키 폐기 (body 없음)
    */
-  logout: (data) => {
-    return api.post('/auth/logout', data);
+  logout: () => {
+    return api.post('/auth/logout');
   },
 };

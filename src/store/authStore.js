@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { authService } from '../services/authService';
 import { consentAPI } from '../api/consent';
-import { STORAGE_KEYS, AUTH_FLOW } from '../utils/constants';
+import { AUTH_FLOW } from '../utils/constants';
 
 export const useAuthStore = create((set, get) => ({
   // 사용자 정보
@@ -33,15 +33,21 @@ export const useAuthStore = create((set, get) => ({
     // 이미 초기화 완료된 경우 스킵 (불필요한 재파싱 및 리렌더 방지)
     if (!get().initializing) return;
 
-    try {
-      const token = sessionStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
-      const storedUser = authService.getStoredUser();
-      const webAuthnSupported = authService.isWebAuthnSupported();
+    // 구 토큰 정리 (sessionStorage → 인메모리 전환 마이그레이션)
+    const oldToken = sessionStorage.getItem('accessToken');
+    if (oldToken) sessionStorage.removeItem('accessToken');
+    const oldRefresh = sessionStorage.getItem('refreshToken');
+    if (oldRefresh) sessionStorage.removeItem('refreshToken');
 
-      if (!token || !storedUser) {
-        sessionStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-        sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
-        sessionStorage.removeItem(STORAGE_KEYS.USER);
+    const webAuthnSupported = authService.isWebAuthnSupported();
+
+    try {
+      // silentRefresh: 쿠키의 Refresh Token으로 Access Token 복원
+      const result = await authService.silentRefresh();
+
+      if (!result) {
+        // Refresh Token 쿠키 없음 또는 만료 → 미인증
+        sessionStorage.removeItem('user');
 
         set({
           isAuthenticated: false,
@@ -52,8 +58,21 @@ export const useAuthStore = create((set, get) => ({
         return;
       }
 
+      // Access Token 복원 성공 → 저장된 사용자 정보 로드
+      const storedUser = authService.getStoredUser();
+      if (!storedUser) {
+        // 토큰은 있지만 사용자 정보 없음 → 미인증 처리
+        authService.forceLogout();
+        set({
+          isAuthenticated: false,
+          user: null,
+          initializing: false,
+          webAuthnSupported,
+        });
+        return;
+      }
+
       // 필수 약관 동의 여부 확인
-      // 명시적으로 allRequiredAgreed: false 일 때만 동의 페이지 표시
       let consentChecked = true;
       let needsConsent = false;
       try {
@@ -75,16 +94,14 @@ export const useAuthStore = create((set, get) => ({
         consentChecked,
         needsConsent,
       });
-    } catch (error) {
-      sessionStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-      sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
-      sessionStorage.removeItem(STORAGE_KEYS.USER);
+    } catch {
+      authService.forceLogout();
 
       set({
         isAuthenticated: false,
         user: null,
         initializing: false,
-        webAuthnSupported: authService.isWebAuthnSupported(),
+        webAuthnSupported,
       });
     }
   },
@@ -221,7 +238,6 @@ export const useAuthStore = create((set, get) => ({
       const { user } = await authService.loginFinish(passkeyOptions);
 
       // 로그인 시 필수 약관 동의 여부 확인
-      // 명시적으로 allRequiredAgreed: false 일 때만 동의 페이지 표시
       let consentChecked = true;
       let needsConsent = false;
       try {

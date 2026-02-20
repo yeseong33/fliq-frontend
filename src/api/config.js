@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { STORAGE_KEYS } from '../utils/constants';
+import { tokenManager } from '../utils/tokenManager';
 
 // CRITICAL #4: 프로덕션에서 API URL 미설정 시 즉시 에러
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ||
@@ -7,7 +7,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ||
     ? (() => { throw new Error('VITE_API_BASE_URL must be set in production'); })()
     : 'http://localhost:8080/api/v1');
 
-// CRITICAL #6: 401 처리 디바운스 (동시 다중 401 캐스케이드 방지)
+// 401 처리 디바운스 (동시 다중 401 캐스케이드 방지)
 let isLoggingOut = false;
 let onUnauthorized = null;
 
@@ -34,9 +34,8 @@ export const setUnauthorizedHandler = (handler) => {
 const handleForceLogout = () => {
   if (!isLoggingOut) {
     isLoggingOut = true;
-    sessionStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-    sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
-    sessionStorage.removeItem(STORAGE_KEYS.USER);
+    tokenManager.clearToken();
+    sessionStorage.removeItem('user');
     if (onUnauthorized) {
       onUnauthorized();
     } else {
@@ -46,22 +45,25 @@ const handleForceLogout = () => {
   }
 };
 
-// CRITICAL #1: JWT 토큰 형식 검증
-const isValidBearerToken = (token) => {
-  if (typeof token !== 'string') return false;
-  if (!token.startsWith('Bearer ')) return false;
-  const jwt = token.slice(7);
-  const parts = jwt.split('.');
-  return parts.length === 3 && parts.every(p => p.length > 0);
-};
-
 // Create axios instance with security headers
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
+  withCredentials: true, // 쿠키 자동 전송 (HTTP-only refresh token)
   headers: {
     'Content-Type': 'application/json',
     'X-Requested-With': 'XMLHttpRequest', // CSRF 방어
+  },
+});
+
+// Refresh 전용 axios (인터셉터 미적용, 무한루프 방지)
+const refreshAxios = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 10000,
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest',
   },
 });
 
@@ -76,13 +78,10 @@ const addArtificialDelay = async () => {
 // Request interceptor to add auth token and artificial delay
 api.interceptors.request.use(
   async (config) => {
-    // sessionStorage 사용 (브라우저 종료 시 자동 삭제)
-    const token = sessionStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
-    if (token && isValidBearerToken(token)) {
-      config.headers.Authorization = token;
-    } else if (token) {
-      // 변조된 토큰 삭제
-      sessionStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+    // 인메모리 토큰 사용
+    const bearerToken = tokenManager.getBearerToken();
+    if (bearerToken) {
+      config.headers.Authorization = bearerToken;
     }
 
     // CRITICAL #3: 프로덕션 Origin 검증용 커스텀 헤더
@@ -116,14 +115,8 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // 401 응답: Access Token 만료 → Refresh Token으로 갱신 시도
+    // 401 응답: Access Token 만료 → Refresh Token 쿠키로 갱신 시도
     if (error.response?.status === 401 && !originalRequest._retry) {
-      // refresh 엔드포인트 자체가 실패한 경우 → 강제 로그아웃
-      if (originalRequest.url?.includes('/auth/refresh')) {
-        handleForceLogout();
-        return Promise.reject(new Error('인증이 만료되었습니다.'));
-      }
-
       // 이미 refresh 진행 중이면 큐에 대기
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
@@ -137,23 +130,13 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const refreshToken = sessionStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
-
-      // Refresh Token이 없으면 강제 로그아웃
-      if (!refreshToken) {
-        isRefreshing = false;
-        handleForceLogout();
-        return Promise.reject(new Error('인증이 만료되었습니다.'));
-      }
-
       try {
-        // Refresh Token으로 새 토큰 발급 (rotation)
-        const { data } = await api.post('/auth/refresh', { refreshToken });
-        const { accessToken, refreshToken: newRefreshToken } = data.data;
+        // Refresh Token 쿠키로 새 Access Token 발급 (body 없음)
+        const { data } = await refreshAxios.post('/auth/refresh');
+        const { accessToken } = data.data;
 
-        // 새 토큰 저장
-        sessionStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, `Bearer ${accessToken}`);
-        sessionStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, newRefreshToken);
+        // 인메모리에 새 Access Token 저장
+        tokenManager.setToken(accessToken);
 
         // 대기 중인 요청들 재시도
         processQueue(null, accessToken);

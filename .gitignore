@@ -109,4 +109,5 @@ ehthumbs.db
 .claude
 
 # Security audit documents
-SECURITY_FIXES.md
+.claude/docs/SECURITY_FIXES.md
+.claude/docs/HTTP_ONLY_COOKIE_PLAN.md

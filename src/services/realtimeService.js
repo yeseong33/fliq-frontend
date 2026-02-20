@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client';
 import logger from '../utils/logger';
-import { STORAGE_KEYS } from '../utils/constants';
+import { tokenManager } from '../utils/tokenManager';
 
 const getRealtimeUrl = () => {
   const url = import.meta.env.VITE_REALTIME_URL;
@@ -19,8 +19,7 @@ const getRealtimeUrl = () => {
 };
 
 const getToken = () => {
-  const bearerToken = sessionStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN) || '';
-  return bearerToken.replace(/^Bearer\s+/i, '');
+  return tokenManager.getToken() || '';
 };
 
 let socket = null;

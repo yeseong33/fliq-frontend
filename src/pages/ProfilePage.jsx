@@ -66,8 +66,9 @@ const ProfilePage = () => {
       const res = await userAPI.updateMe({ name: trimmed });
       const updatedUser = res.data?.data || res.data;
       // 스토어 및 sessionStorage 업데이트
-      useAuthStore.setState({ user: { ...user, name: updatedUser.name || trimmed } });
-      sessionStorage.setItem('user', JSON.stringify({ ...user, name: updatedUser.name || trimmed }));
+      const updatedUserObj = { ...user, name: updatedUser.name || trimmed };
+      useAuthStore.setState({ user: updatedUserObj });
+      sessionStorage.setItem('user', JSON.stringify(updatedUserObj));
       toast.success('이름이 변경되었습니다.');
       setShowNameEdit(false);
     } catch (error) {
