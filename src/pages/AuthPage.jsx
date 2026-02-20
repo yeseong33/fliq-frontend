@@ -29,6 +29,20 @@ const getFlowIndex = (flow) => {
   return idx >= 0 ? idx : 0;
 };
 
+// 같은 컴포넌트를 렌더링하는 flow들은 같은 key를 사용하여 불필요한 리마운트 방지
+const getStableKey = (flow) => {
+  if ([AUTH_FLOW.IDLE, AUTH_FLOW.LOGIN_EMAIL, AUTH_FLOW.LOGIN_PASSKEY].includes(flow)) {
+    return 'login';
+  }
+  if ([AUTH_FLOW.SIGNUP_OTP, AUTH_FLOW.RECOVERY_OTP].includes(flow)) {
+    return flow; // OTP는 각각 다른 키
+  }
+  if ([AUTH_FLOW.SIGNUP_PASSKEY, AUTH_FLOW.RECOVERY_PASSKEY].includes(flow)) {
+    return flow;
+  }
+  return flow;
+};
+
 const AuthPage = () => {
   const {
     authFlow,
@@ -126,7 +140,7 @@ const AuthPage = () => {
   return (
     <div className="page bg-white dark:bg-gray-900 transition-colors duration-200">
       <div
-        key={authFlow}
+        key={getStableKey(authFlow)}
         className={animClass}
         onAnimationEnd={handleAnimEnd}
       >
