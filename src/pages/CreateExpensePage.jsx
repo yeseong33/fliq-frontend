@@ -174,6 +174,7 @@ const CreateExpensePage = () => {
           <div className="flex items-center justify-between px-4 py-3">
             <button
               onClick={handleBack}
+              aria-label="뒤로 가기"
               className="p-2 -ml-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
             >
               <ChevronLeft size={24} />
@@ -184,8 +185,8 @@ const CreateExpensePage = () => {
             <div className="w-10" />
           </div>
         </div>
-        <div className="flex justify-center py-12 text-gray-400 dark:text-gray-500">
-          <span className="loading-dots">
+        <div className="flex justify-center py-12 text-gray-400 dark:text-gray-500" role="status" aria-label="로딩 중">
+          <span className="loading-dots" aria-hidden="true">
             <span></span>
             <span></span>
             <span></span>
@@ -202,6 +203,7 @@ const CreateExpensePage = () => {
         <div className="flex items-center justify-between px-4 py-3">
           <button
             onClick={handleBack}
+            aria-label="뒤로 가기"
             className="p-2 -ml-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
           >
             <ChevronLeft size={24} />

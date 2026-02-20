@@ -1,5 +1,6 @@
 import { authAPI } from '../api';
 import { STORAGE_KEYS } from '../utils/constants';
+import { tokenManager } from '../utils/tokenManager';
 import {
   parseCreationOptions,
   parseRequestOptions,
@@ -74,8 +75,8 @@ export const authService = {
 
       const { accessToken, user } = response.data.data;
 
-      // 토큰 저장 및 signupToken 삭제
-      sessionStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, `Bearer ${accessToken}`);
+      // Access Token 인메모리 저장, refreshToken은 서버가 Set-Cookie로 처리
+      tokenManager.setToken(accessToken);
       this.setStoredUser(user);
       sessionStorage.removeItem(STORAGE_KEYS.SIGNUP_TOKEN);
 
@@ -136,8 +137,8 @@ export const authService = {
 
       const { accessToken, user } = response.data.data;
 
-      // 토큰 저장
-      sessionStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, `Bearer ${accessToken}`);
+      // Access Token 인메모리 저장, refreshToken은 서버가 Set-Cookie로 처리
+      tokenManager.setToken(accessToken);
       this.setStoredUser(user);
 
       return { accessToken, user };
@@ -217,8 +218,8 @@ export const authService = {
 
       const { accessToken, user } = response.data.data;
 
-      // 토큰 저장 및 recoveryToken 삭제
-      sessionStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, `Bearer ${accessToken}`);
+      // Access Token 인메모리 저장, refreshToken은 서버가 Set-Cookie로 처리
+      tokenManager.setToken(accessToken);
       this.setStoredUser(user);
       sessionStorage.removeItem(STORAGE_KEYS.RECOVERY_TOKEN);
 
@@ -255,6 +256,25 @@ export const authService = {
     return response.data;
   },
 
+  // ==================== Silent Refresh ====================
+
+  /**
+   * 쿠키의 Refresh Token으로 Access Token 갱신
+   * 앱 초기화 시 / 새로고침 시 로그인 상태 복원에 사용
+   * @returns {{ accessToken: string, user: object } | null}
+   */
+  async silentRefresh() {
+    try {
+      const response = await authAPI.refresh();
+      const { accessToken } = response.data.data;
+      tokenManager.setToken(accessToken);
+      return { accessToken };
+    } catch {
+      tokenManager.clearToken();
+      return null;
+    }
+  },
+
   // ==================== WebAuthn 지원 확인 ====================
 
   isWebAuthnSupported() {
@@ -267,15 +287,32 @@ export const authService = {
 
   // ==================== 기타 유틸리티 ====================
 
-  logout() {
-    sessionStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+  async logout() {
+    // 서버에서 Refresh Token 쿠키 폐기 (실패해도 로컬 정리 진행)
+    try {
+      await authAPI.logout();
+    } catch {
+      // 네트워크 오류 등 무시
+    }
+
+    tokenManager.clearToken();
+    sessionStorage.removeItem(STORAGE_KEYS.USER);
+    sessionStorage.removeItem(STORAGE_KEYS.SIGNUP_TOKEN);
+    sessionStorage.removeItem(STORAGE_KEYS.RECOVERY_TOKEN);
+  },
+
+  /**
+   * 강제 로그아웃 (401 refresh 실패 시, API 호출 없이 로컬만 정리)
+   */
+  forceLogout() {
+    tokenManager.clearToken();
     sessionStorage.removeItem(STORAGE_KEYS.USER);
     sessionStorage.removeItem(STORAGE_KEYS.SIGNUP_TOKEN);
     sessionStorage.removeItem(STORAGE_KEYS.RECOVERY_TOKEN);
   },
 
   isAuthenticated() {
-    return !!sessionStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+    return !!tokenManager.getToken();
   },
 
   getStoredUser() {

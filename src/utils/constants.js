@@ -1,5 +1,4 @@
 export const STORAGE_KEYS = {
-  ACCESS_TOKEN: 'accessToken',
   USER: 'user',
   SIGNUP_TOKEN: 'signupToken',
   RECOVERY_TOKEN: 'recoveryToken',

@@ -23,6 +23,7 @@ const Header = ({ title, showBack = false, showProfile = false, transparent = fa
           {showBack && (
             <button
               onClick={handleBack}
+              aria-label="뒤로 가기"
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200 text-gray-900 dark:text-white"
             >
               <ArrowLeft size={20} />
@@ -35,6 +36,7 @@ const Header = ({ title, showBack = false, showProfile = false, transparent = fa
           {showProfile && (
             <button
               onClick={() => navigate('/profile')}
+              aria-label="프로필"
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200"
             >
               <User size={22} className="text-gray-600 dark:text-gray-300" />

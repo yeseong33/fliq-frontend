@@ -221,7 +221,7 @@ const CreateGatheringPage = () => {
                   }`}
               />
               {errors.title && (
-                <p className="mt-2 text-sm text-red-500">{errors.title}</p>
+                <p role="alert" className="mt-2 text-sm text-red-500">{errors.title}</p>
               )}
             </div>
 
@@ -248,7 +248,7 @@ const CreateGatheringPage = () => {
                   }`}
               />
               {errors.description && (
-                <p className="mt-2 text-sm text-red-500">{errors.description}</p>
+                <p role="alert" className="mt-2 text-sm text-red-500">{errors.description}</p>
               )}
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 text-right">
                 {formData.description.length}/500
@@ -302,6 +302,7 @@ const CreateGatheringPage = () => {
               <button
                 type="button"
                 onClick={handlePrevMonth}
+                aria-label="이전 달"
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
                 <ChevronLeft size={20} className="text-gray-600 dark:text-gray-300" />
@@ -312,6 +313,7 @@ const CreateGatheringPage = () => {
               <button
                 type="button"
                 onClick={handleNextMonth}
+                aria-label="다음 달"
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
                 <ChevronRight size={20} className="text-gray-600 dark:text-gray-300" />
@@ -403,7 +405,7 @@ const CreateGatheringPage = () => {
               >
                 <span className="relative z-10 flex items-center gap-2">
                   {loading ? (
-                    <span className="loading-dots">
+                    <span className="loading-dots" aria-hidden="true">
                       <span></span>
                       <span></span>
                       <span></span>

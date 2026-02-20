@@ -30,8 +30,8 @@ const ProfilePage = () => {
 
   const { state: pullState, pullDistance } = usePullToRefresh(handleRefresh);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate('/auth');
   };
 
@@ -40,7 +40,7 @@ const ProfilePage = () => {
     try {
       await userAPI.deleteMe();
       toast.success('회원 탈퇴가 완료되었습니다.');
-      logout();
+      await logout();
       navigate('/auth', { replace: true });
     } catch (error) {
       toast.error(error.message || '회원 탈퇴에 실패했습니다.');
@@ -66,8 +66,9 @@ const ProfilePage = () => {
       const res = await userAPI.updateMe({ name: trimmed });
       const updatedUser = res.data?.data || res.data;
       // 스토어 및 sessionStorage 업데이트
-      useAuthStore.setState({ user: { ...user, name: updatedUser.name || trimmed } });
-      sessionStorage.setItem('user', JSON.stringify({ ...user, name: updatedUser.name || trimmed }));
+      const updatedUserObj = { ...user, name: updatedUser.name || trimmed };
+      useAuthStore.setState({ user: updatedUserObj });
+      sessionStorage.setItem('user', JSON.stringify(updatedUserObj));
       toast.success('이름이 변경되었습니다.');
       setShowNameEdit(false);
     } catch (error) {

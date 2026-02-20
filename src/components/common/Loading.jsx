@@ -8,7 +8,7 @@ const Loading = ({ message = '로딩 중...', size = 'md' }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center py-12">
+    <div className="flex flex-col items-center justify-center py-12" role="status" aria-label={message || '로딩 중'}>
       <div className={`${sizeClasses[size]} border-gray-200 dark:border-gray-700 border-t-blue-500 dark:border-t-blue-400 rounded-full animate-spin`} />
       {message && (
         <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">{message}</p>

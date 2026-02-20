@@ -40,11 +40,12 @@ const Button = ({
     <button
       className={classes}
       disabled={disabled || loading}
+      aria-busy={loading}
       {...props}
     >
       <span className="btn-content">
         {loading ? (
-          <span className="loading-dots">
+          <span className="loading-dots" aria-hidden="true">
             <span></span>
             <span></span>
             <span></span>

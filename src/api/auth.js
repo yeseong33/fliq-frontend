@@ -86,4 +86,23 @@ export const authAPI = {
   recoveryPasskeyFinish: (data) => {
     return api.post('/auth/recovery/passkey/finish', data);
   },
+
+  // ==================== 토큰 갱신 ====================
+
+  /**
+   * Refresh Token으로 Access Token 갱신 (쿠키 자동 전송, body 없음)
+   * @returns {{ accessToken: string }}
+   */
+  refresh: () => {
+    return api.post('/auth/refresh');
+  },
+
+  // ==================== 로그아웃 ====================
+
+  /**
+   * 로그아웃 - 서버에서 Refresh Token 쿠키 폐기 (body 없음)
+   */
+  logout: () => {
+    return api.post('/auth/logout');
+  },
 };
