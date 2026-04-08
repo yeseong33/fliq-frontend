@@ -97,7 +97,7 @@ export const TERMS_OF_SERVICE = {
       ],
     },
   ],
-  notice: '※ 본 약관은 서비스 정식 출시 시 최종 확정됩니다.',
+  notice: '본 약관에 대한 문의는 fliq.support@gmail.com으로 연락해 주세요.',
 };
 
 export const PRIVACY_POLICY = {
@@ -140,9 +140,9 @@ export const PRIVACY_POLICY = {
     },
     {
       title: '6. 개인정보 보호책임자',
-      content: `• 담당자: (추후 지정)
-• 연락처: (추후 지정)`,
+      content: `• 담당자: 오예성
+• 연락처: fliq.support@gmail.com`,
     },
   ],
-  notice: '※ 본 방침은 서비스 정식 출시 시 최종 확정됩니다.',
+  notice: '본 방침에 대한 문의는 fliq.support@gmail.com으로 연락해 주세요.',
 };
