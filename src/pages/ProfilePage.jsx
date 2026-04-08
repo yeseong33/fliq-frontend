@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Mail, LogOut, ChevronRight, Sun, Moon, CreditCard, UserX, FileText } from 'lucide-react';
+import { User, Mail, LogOut, ChevronRight, Sun, Moon, CreditCard, UserX, FileText, Shield } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
@@ -198,6 +198,36 @@ const ProfilePage = () => {
               <div className="text-left">
                 <span className="font-medium text-gray-900 dark:text-white">약관 및 동의</span>
                 <p className="text-sm text-gray-500 dark:text-gray-400">약관 동의 현황 관리</p>
+              </div>
+            </div>
+            <ChevronRight size={20} className="text-gray-400" />
+          </button>
+
+          <button
+            onClick={() => navigate('/terms')}
+            className="w-full flex items-center justify-between p-4 -mx-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-2xl transition-all duration-200"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-gray-500 to-slate-500 rounded-xl flex items-center justify-center shadow-lg shadow-gray-500/25">
+                <FileText size={20} className="text-white" />
+              </div>
+              <div className="text-left">
+                <span className="font-medium text-gray-900 dark:text-white">서비스 이용약관</span>
+              </div>
+            </div>
+            <ChevronRight size={20} className="text-gray-400" />
+          </button>
+
+          <button
+            onClick={() => navigate('/privacy')}
+            className="w-full flex items-center justify-between p-4 -mx-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-2xl transition-all duration-200"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg shadow-teal-500/25">
+                <Shield size={20} className="text-white" />
+              </div>
+              <div className="text-left">
+                <span className="font-medium text-gray-900 dark:text-white">개인정보 처리방침</span>
               </div>
             </div>
             <ChevronRight size={20} className="text-gray-400" />
