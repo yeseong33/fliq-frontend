@@ -5,7 +5,7 @@
 
 export const TERMS_OF_SERVICE = {
   title: '서비스 이용약관',
-  lastUpdated: '2025년 1월 1일',
+  lastUpdated: '2026년 4월 1일',
   sections: [
     {
       title: '제1조 (목적)',
@@ -102,7 +102,7 @@ export const TERMS_OF_SERVICE = {
 
 export const PRIVACY_POLICY = {
   title: '개인정보 처리방침',
-  lastUpdated: '2025년 1월 1일',
+  lastUpdated: '2026년 4월 1일',
   sections: [
     {
       title: '1. 개인정보 수집 항목 및 이용 목적',
@@ -149,7 +149,7 @@ export const PRIVACY_POLICY = {
 
 export const SUPPORT_INFO = {
   title: '기술 지원',
-  lastUpdated: '2025년 1월 1일',
+  lastUpdated: '2026년 4월 1일',
   sections: [
     {
       title: '고객 지원 안내',
