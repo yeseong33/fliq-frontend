@@ -25,6 +25,7 @@ import ConsentRequiredPage from './pages/ConsentRequiredPage';
 import ConsentManagePage from './pages/ConsentManagePage';
 import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
+import SupportPage from './pages/SupportPage';
 
 // returnUrl 검증: Open Redirect 방지
 const isSafeReturnUrl = (url) =>
@@ -145,6 +146,7 @@ function App() {
             {/* 공개 페이지 (로그인 불필요) */}
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/support" element={<SupportPage />} />
             <Route
               path="/auth/*"
               element={(!user || isSignupAccountStep) ? <AuthPage /> : <RedirectFromAuth />}
