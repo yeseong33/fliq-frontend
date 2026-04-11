@@ -5,7 +5,8 @@
 
 export const TERMS_OF_SERVICE = {
   title: '서비스 이용약관',
-  lastUpdated: '2026년 4월 1일',
+  version: '1.1',
+  lastUpdated: '2026년 4월 11일',
   sections: [
     {
       title: '제1조 (목적)',
@@ -36,6 +37,11 @@ export const TERMS_OF_SERVICE = {
       title: '제6조 (책임 제한)',
       content: `1. 회사는 이용자 간의 금전 거래에 대해 직접적인 책임을 지지 않습니다.
 2. 천재지변, 시스템 장애 등 불가항력으로 인한 서비스 중단에 대해 책임을 지지 않습니다.`,
+    },
+    {
+      title: '제7조 (이용 자격)',
+      content: `1. 본 서비스는 만 14세 이상의 이용자만 가입 및 이용할 수 있습니다.
+2. 만 14세 미만 아동은 본 서비스에 가입할 수 없으며, 가입 사실이 확인될 경우 회사는 즉시 해당 계정을 해지할 수 있습니다.`,
     },
   ],
   additionalTerms: [
@@ -102,7 +108,8 @@ export const TERMS_OF_SERVICE = {
 
 export const PRIVACY_POLICY = {
   title: '개인정보 처리방침',
-  lastUpdated: '2026년 4월 1일',
+  version: '1.1',
+  lastUpdated: '2026년 4월 11일',
   sections: [
     {
       title: '1. 개인정보 수집 항목 및 이용 목적',
@@ -142,6 +149,12 @@ export const PRIVACY_POLICY = {
       title: '6. 개인정보 보호책임자',
       content: `• 담당자: 오예성
 • 연락처: fliq.support@gmail.com`,
+    },
+    {
+      title: '7. 만 14세 미만 아동의 개인정보 보호',
+      content: `• 회사는 만 14세 미만 아동의 개인정보를 수집하지 않습니다.
+• 만 14세 미만 아동은 본 서비스에 가입할 수 없습니다.
+• 만 14세 미만 아동의 개인정보가 수집된 사실을 인지한 경우, 즉시 해당 정보를 파기합니다.`,
     },
   ],
   notice: '본 방침에 대한 문의는 fliq.support@gmail.com으로 연락해 주세요.',
