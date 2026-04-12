@@ -26,6 +26,9 @@ import ConsentManagePage from './pages/ConsentManagePage';
 import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
 import SupportPage from './pages/SupportPage';
+import TermsPageEn from './pages/TermsPageEn';
+import PrivacyPageEn from './pages/PrivacyPageEn';
+import SupportPageEn from './pages/SupportPageEn';
 
 // returnUrl 검증: Open Redirect 방지
 const isSafeReturnUrl = (url) =>
@@ -147,6 +150,9 @@ function App() {
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/support" element={<SupportPage />} />
+            <Route path="/en/terms" element={<TermsPageEn />} />
+            <Route path="/en/privacy" element={<PrivacyPageEn />} />
+            <Route path="/en/support" element={<SupportPageEn />} />
             <Route
               path="/auth/*"
               element={(!user || isSignupAccountStep) ? <AuthPage /> : <RedirectFromAuth />}

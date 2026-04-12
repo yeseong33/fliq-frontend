@@ -1,23 +1,13 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
 import { PRIVACY_POLICY } from '../constants/terms';
 
 const PrivacyPage = () => {
-  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
       {/* 헤더 */}
       <header className="sticky top-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center gap-3">
-          <button
-            onClick={() => navigate(-1)}
-            className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            aria-label="뒤로가기"
-          >
-            <ArrowLeft size={20} className="text-gray-700 dark:text-gray-300" />
-          </button>
           <h1 className="text-lg font-bold text-gray-900 dark:text-white">
             {PRIVACY_POLICY.title}
           </h1>
