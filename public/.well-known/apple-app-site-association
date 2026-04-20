@@ -1,0 +1,15 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "89NE6EK257.com.fliq.app.dev",
+        "paths": ["/invite", "/invite/*"]
+      },
+      {
+        "appID": "89NE6EK257.com.fliq.app.prd",
+        "paths": ["/invite", "/invite/*"]
+      }
+    ]
+  }
+}
