@@ -7,6 +7,10 @@
         "paths": ["/invite", "/invite/*"]
       },
       {
+        "appID": "89NE6EK257.com.fliq.app.staging",
+        "paths": ["/invite", "/invite/*"]
+      },
+      {
         "appID": "89NE6EK257.com.fliq.app.prd",
         "paths": ["/invite", "/invite/*"]
       }

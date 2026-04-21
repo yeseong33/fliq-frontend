@@ -11,6 +11,14 @@
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
+      "package_name": "com.fliq.app.staging",
+      "sha256_cert_fingerprints": ["<STG_SHA256>"]
+    }
+  },
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
       "package_name": "com.fliq.app.prd",
       "sha256_cert_fingerprints": ["<PRD_SHA256>"]
     }
