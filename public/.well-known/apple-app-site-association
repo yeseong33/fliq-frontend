@@ -1,18 +1,29 @@
 {
+  "webcredentials": {
+    "apps": [
+      "89NE6EK257.com.fliq.app.dev",
+      "89NE6EK257.com.fliq.app.staging",
+      "89NE6EK257.com.fliq.app.prd"
+    ]
+  },
   "applinks": {
-    "apps": [],
     "details": [
       {
-        "appID": "89NE6EK257.com.fliq.app.dev",
-        "paths": ["/invite", "/invite/*"]
-      },
-      {
-        "appID": "89NE6EK257.com.fliq.app.staging",
-        "paths": ["/invite", "/invite/*"]
-      },
-      {
-        "appID": "89NE6EK257.com.fliq.app.prd",
-        "paths": ["/invite", "/invite/*"]
+        "appIDs": [
+          "89NE6EK257.com.fliq.app.dev",
+          "89NE6EK257.com.fliq.app.staging",
+          "89NE6EK257.com.fliq.app.prd"
+        ],
+        "components": [
+          {
+            "/": "/invite",
+            "comment": "모임 초대 랜딩"
+          },
+          {
+            "/": "/invite/*",
+            "comment": "초대 하위 경로"
+          }
+        ]
       }
     ]
   }
