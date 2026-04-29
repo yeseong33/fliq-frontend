@@ -1,26 +1,28 @@
 [
   {
-    "relation": ["delegate_permission/common.handle_all_urls"],
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
     "target": {
       "namespace": "android_app",
       "package_name": "com.fliq.app.dev",
-      "sha256_cert_fingerprints": ["<DEV_SHA256>"]
+      "sha256_cert_fingerprints": [
+        "D2:3A:87:88:F2:66:8D:32:AB:AB:F8:B0:46:1B:F7:34:8B:C2:1C:B0:64:E3:F1:CB:D7:34:B0:07:CA:BE:5A:AD"
+      ]
     }
   },
   {
-    "relation": ["delegate_permission/common.handle_all_urls"],
-    "target": {
-      "namespace": "android_app",
-      "package_name": "com.fliq.app.staging",
-      "sha256_cert_fingerprints": ["<STG_SHA256>"]
-    }
-  },
-  {
-    "relation": ["delegate_permission/common.handle_all_urls"],
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
     "target": {
       "namespace": "android_app",
       "package_name": "com.fliq.app.prd",
-      "sha256_cert_fingerprints": ["<PRD_SHA256>"]
+      "sha256_cert_fingerprints": [
+        "87:98:37:3B:C4:8F:5F:1D:06:C2:49:11:29:C7:01:89:FE:25:11:5B:60:F5:C9:92:BA:21:16:DD:DB:ED:82:F5"
+      ]
     }
   }
 ]
