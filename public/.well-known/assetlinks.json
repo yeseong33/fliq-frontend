@@ -8,7 +8,7 @@
       "namespace": "android_app",
       "package_name": "com.fliq.app.dev",
       "sha256_cert_fingerprints": [
-        "FA:C6:17:45:DC:09:03:78:6F:B9:ED:E6:2A:96:2B:39:9F:73:48:F0:BB:6F:89:9B:83:32:66:75:91:03:3B:9C"
+        "FB:A5:82:1B:F9:17:90:FD:3A:33:62:DF:A9:E2:77:73:E4:8D:0E:B3:26:AF:0C:11:94:FF:9F:27:7C:35:5B:BC"
       ]
     }
   },
@@ -22,7 +22,8 @@
       "package_name": "com.fliq.app.prd",
       "sha256_cert_fingerprints": [
         "F6:1E:43:26:23:F0:62:00:B9:55:59:C7:AA:B7:42:A4:A6:B2:86:87:11:28:BC:6B:37:55:54:AC:AF:FF:A2:08",
-        "87:98:37:3B:C4:8F:5F:1D:06:C2:49:11:29:C7:01:89:FE:25:11:5B:60:F5:C9:92:BA:21:16:DD:DB:ED:82:F5"
+        "87:98:37:3B:C4:8F:5F:1D:06:C2:49:11:29:C7:01:89:FE:25:11:5B:60:F5:C9:92:BA:21:16:DD:DB:ED:82:F5",
+        "FE:B0:FD:31:1B:84:C6:E2:4B:04:AF:90:71:56:78:17:0D:9F:01:38:FE:F3:A6:53:1A:07:CB:F4:30:98:76:37"
       ]
     }
   }
