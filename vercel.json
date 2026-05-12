@@ -1,7 +1,11 @@
 {
   "rewrites": [
     {
-      "source": "/((?!api/|\\.well-known/).*)",
+      "source": "/account-deletion",
+      "destination": "/account-deletion.html"
+    },
+    {
+      "source": "/((?!api/|\\.well-known/|account-deletion).*)",
       "destination": "/index.html"
     }
   ],
